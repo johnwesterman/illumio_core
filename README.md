@@ -3,11 +3,13 @@
 ```
 Written by John Westerman.
 Illumio, Inc.
-Serial number for this document is 202010010948; Version 2020.3
-October 1, 2020 09:48
+Serial number for this document is 202010121638; Version 2020.4
+October 12, 2020 16:40
+
 Things I changed:
 1. Introduction of CentOS8 notes and process. As of this writing installing the PCE on CentOS8 is not supported.
 2. A few notes on how to updrade the PCE/UI.
+3. Move to markdown language for better display on github.
 ```
 
 ## Install base packages:
