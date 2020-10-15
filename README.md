@@ -3,13 +3,15 @@
 ```
 Written by John Westerman.
 Illumio, Inc.
-Serial number for this document is 202010121638; Version 2020.4
-October 12, 2020 16:40
+Serial number for this document is 202010140928;
+Version 2020.4
+October 14, 2020 09:28
 
 Things I changed:
 1. Introduction of CentOS8 notes and process. As of this writing installing the PCE on CentOS8 is not supported.
 2. A few notes on how to updrade the PCE/UI.
 3. Move to markdown language for better display on github.
+4. Added more on setting up and running a multi-node cluster (MNC)
 ```
 
 ## Install base packages:
@@ -185,19 +187,39 @@ sudo -u ilo-pce illumio-pce-env check
 ```
 **NOTE: If you don't get "OK" at this piont then go back and sort things out before moving forward. This system will not work without a working certificate of some kind.**
 
-The --generate-cert option generates a self-signed certificate, installs that certificate and related private key with proper permissions. Doing this sets up the PCE for a 90 day trial. If you leave that off you will be required to install your certificate in the directories with file names mentioned above or change the /etc/illumio-pec/runtime_env.yml file with the settings you want to use.
+The **--generate-cert** option generates a self-signed certificate, installs that certificate and related private key with proper permissions. Doing this sets up the PCE for a 90 day trial. If you leave that off you will be required to install your certificate in the directories with file names mentioned above or change the **/etc/illumio-pec/runtime_env.yml** file with the settings you want to use.
 
 It is possible to use your own self signed certificate. Keep in mind it has to be in a certain format with extended attributes, verified and installed by hand. It's possible but I am not going to cover that topic here.
 
 NOTE: The server certificate is going to be a combination of the server certificate, the certificate chain including all intermediate certificates and the root certificate, in that order. If the certificate file does not have all of these certificates contained with it you will want to used an editor and make it so. Use the following commands to validate the certificate file.
 
+## Creating the certificates
+
+Certificates are used for 3 major components in the PCE software installation that use TLS:
+- Web Service – Used to secure access to the PCE web console, as well as that provided by the Illumio ASP REST API.
+- Event Service – Provides continuous, secure connectivity from the PCE to the VENs under management and provides a notification capability so that VENs can be instructed to update policy on the host Workloads.
+- Service Discovery – Used for cluster management between PCE node members in the cluster and allows real time alerting on service availability and status.
+
+When building your certificate it will be important to remember these key attributes included with the certificate:
+
+- TLS Web Server Authentication Extended Key Usage
+- TLS Web Client Authentication Extended Key Usage
+- Subject Alternative Names (SAN) are included for the PCE cluster VIP name (load balancer FQDN) and core node names. You do not need to include the data nodes or any IP addresses in the SAN field of the certificate.
+
+A common certificate will be used for all these functions but it is important that all the right options are present in the certificate to allow for secure communication of the software.
+
 ## Validating the Certificate.
 
-Your certificate file should be in PEM format. If you look at the file, it will be text with "BEGIN CERTIFICATE" and "END CERTIFICATE" in the text. Cat the certificate and make sure it's not encrypted.
+Your certificate file should be in PEM format. If you look at the file, it will be text with "_BEGIN CERTIFICATE_" and _"END CERTIFICATE"_ in the text. Cat the certificate and make sure it's not encrypted.
 
-Check out the certificate:
+Check the certificate to be valid:
 ```
 openssl x509 -text -noout -in <certificate_name>
+```
+And another check that is displayed a little easier to read is to ask the PCE about the certificate. The following command will look at all of the certificates in the certificate chain and display information for each of them. If there is a problem with the certificate chain it will show up in this data.
+
+```
+ctlenv setup -ql --test 5
 ```
 
 NOTE: You should see the full chain here. You also want the following extended attributes:
@@ -205,7 +227,7 @@ NOTE: You should see the full chain here. You also want the following extended a
 X509v3 Extended Key Usage:
 TLS Web Server Authentication, TLS Web Client Authentication
 ```
-*If you do not have TLS web and client you will need a new certificate.*
+*If you do not have TLS web and client you will need to generate a new certificate that include these attributes.*
 
 Check to insure that the Private Key and the Certificate are related:
 ```
@@ -219,19 +241,23 @@ star_poc_segmentationpov_com.pem - Server private key
 star_poc_segmentationpov_com_bundle.crt - Certificate bundle
 ```
 
+## Preparing the certificate and key files to be used
+
 The Illumio PCE installer program installs the certificate and private keys as follows:
 
-The private key is at /var/lib/illumio-pce/cert/server.key
+The private key is at /var/lib/illumio-pce/cert/server.key. Make sure it has the following file attributes:
 ```
 chmod 400 server.key
 chown ilo-pce:ilo-pce server.key
 ```
 
-The server certificate bundle is at /var/lib/illumio-pce/cert/server.crt
-NOTE: this is bundle with full chain of trust in PEM format in this order:
-1. Root certificate
-2. Intermediate certificate(s)
-3. PCE certificate
+The server certificate bundle is at */var/lib/illumio-pce/cert/server.crt*
+
+NOTE: this is a bundle file with full chain of trust in PEM format that will include all root and intermediate certificates in this order:
+
+1. PCE certificate
+2. Intermediate certificate(s) in order of trust
+3. Root certificate
 
 Make sure the certificate file has the proper permissions:
 ```
@@ -263,26 +289,47 @@ Copy the .crt file into the "any_folder_name" folder
 Make sure the permissions are OK (755 for the folder, 644 for the file)
 Finally, run "sudo update-ca-certificates"
 
+## A note on setting up an Multi-Node Cluster (MNC)
+
+**If you are not setting up an MNC you can safely skip this section.**
+
+In most cases this document is used to set up a quick testing environment for functional testing using a single node (SNC). Normally a SNC is not used in production. Occasionally there is a need to set up a multi-node cluster (MNC) in a test environment. Here are some of my thoughts with that process.
+
+Typically the setup will be run ("illumio-pce-env setup") on the core node only. That will generate a runtime yaml file and put it in the /etc/illumio-pce/runtime_env.yml file. This file will be a template in an MNC. In that file there are things that need to be consistent in the cluster:
+
+* The certificate used in this process is the certificate used on all of the nodes. There will be only one certificate and one private key for all nodes. The certificate and private key are the same for all nodes. The point is once you have generated a proper certificate above you have what you need for the cluster nodes.
+* The runtime_env.yml file will be mostly the same between all the nodes. The only thing that will likely be different is the **"node_type:"** directive. For the cores it is "core" and for the data nodes it's "data1" and "data2" in a 4 node cluster.
+* The **"pce_fqdn:"** directive should never be a core node FQDN. It should always be a separate name which is usually the FQDN of the load balancer VIP IP for the PCE cluster.
+* The **"service_discovery_fqdn:"** directive should all be the same. Usually we recommend point to the core0 FQDN or IP address.
+
+So how to go about doing this.
+
+* Run the setup on core0.
+* Copy the **/etc/illumio-pce/runtime_env.yml** to each of the other nodes **/etc/illumio-pce/runtime_env**.
+* Make relevant changes as indicated above to each of the other nodes changing their "node_type" to reflect the function of the node.
+
+Once you have completed the work above you can continue to start and run the PCE.
+
 ## Start and run the PCE
 
-Start the PCE Software:
+Start the PCE Software (on each node if running an MNC):
 ```
 ctl start --runlevel 1
 ctl status -svw
 ```
 NOTE: if PCE doesn't have running status in a minute or two go back and check your work
 
-If a multi-node cluster device, verify the Data "Master NODE":
+If a multi-node cluster is being used, verify the Data "Master NODE" election:
 ```
 ctldb show-master
 ```
-NOTE: You will use the master node information in the next step
+NOTE: You will use the master node information in the next step. The command above will return the IP address of the master node. Do to initialize the PCE you will do so on the master data node.
 
 ## Initialize the PCE Software:
 NOTE: Do the following ON THE DATABASE MASTER NODE determined FROM ABOVE
 ```
 ctldb setup
-ctl set-runlevel 5
+ctl set-runlevel 5 (this will set the runlevel on all nodes)
 ctl status -svw
 ctl cluster-status
 ```
@@ -298,24 +345,36 @@ should get you in to the landing page.
 ```
 ctldb create-domain --user-name user@your_domain.com --full-name 'Demo User' --org-name 'Illumio'
 ```
-... You are done.
-... Now, log into the system and start pairing.
-... The PCE is up and running at this point.
+You are done.
 
-After all that is done ...
+Now, log into the system and start pairing.
+
+The PCE is up and running at this point. You should have a clean, freshly installed system ready to pair workloads.
 
 ## Set up the VEN repository.  
 
+It is recommended that you use the cluster to also be a repository for the VEN software. This section will walk you through that process. You will need to get the VEN bundles you will need from the Illumio Support web site. They will be clearly identified in the VEN download section of the software download area. They will have a .bz2 extenstion.
+
+Once you obtain this file copy it to the /tmp directory of the core0 node. The reason for /tmp is because ilo-pce will need access to this file and will not have the proper access unless you put it here. If you put it somewhere else just remember ilo-pce needs to read the file so permissions will need to be set. /tmp is the easiest path to success.
+
+I am assuming you install the tar file to the /tmp directory in the examples that follow.
+
 This command installs the PCE bundle:
-	sudo -u ilo-pce illumio-pce-ctl ven-software-install illumio-ven-bundle-NNNNNNNNN.tar.bz2
+```
+	sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-NNNNNNNNN.tar.bz2
+```
 
 where NNNNNNNN is the build version downloaded from the web site.
 
 For example:
-    sudo -u ilo-pce illumio-pce-ctl ven-software-install illumio-ven-bundle-19.3.0-6104.tar.bz2
+```
+    sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2
+```
 
 to set it as the default, you'd run this:
+```
     sudo -u ilo-pce illumio-pce-ctl ven-software-release-set-default 19.3.0-6104
+```
 
 ## PAIRING VENs for LINUX Examples
 
@@ -420,9 +479,8 @@ This command is located in c:/windows/program files/illumio/   (not bin)
 2.	cd c:\windows\program files\illumio
 3.	./illumio-ven-ctl activate -management-server [management-server]:8443 -activation-code  [your activation code]
 
-If you get a certificate error you may have to install the certificate bundle.
-How to install bundle on Windows:
-http://www.thewindowsclub.com/manage-trusted-root-certificates-windows
+If you get a certificate error you may have to install the certificate bundle. [Find out how to install bundle on Windows with this link](
+http://www.thewindowsclub.com/manage-trusted-root-certificates-windows).
 
 Once the VEN is installed on Windows if you want to see the filters the "iptables --list -an" eqivalent command is: "netsh wfp show filters"
 
@@ -516,3 +574,11 @@ Technically speaking, on the IIlumio PCE cluster, REST API over HTTPS calls are 
 ### Obtaining ILO-VPNGEN
 
 The file ilo-vpngen.sh can be obtained from Illuio Support, an Illumio SE or Illumio PS person. Also reference the official web site above for all of the details. [Illumio Support for ilo-vpngen.](https://support.illumio.com/knowledge-base/articles/Enabling-encryption-with-ilo-vpngen.html)
+
+## Reseting an environment
+
+While rare it has been known that a false start or mis-configuration will cause a system to need to be reset. This command should be used with caution as it will reset the persistent data store and other critical data in the system. If you are using a MNC this will need to be done on every node that is in a cluster. The command is very destructive to a running system. You should have a backup of your data before doing this if that is desired.
+
+```
+sudo -u ilo-pce /opt/illumio-pce/illumio-pce-ctl reset
+```
