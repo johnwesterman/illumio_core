@@ -3,13 +3,13 @@
 ```
 Written by John Westerman.
 Illumio, Inc.
-Serial number for this document is 202010151457;
-Version 2020.5
-October 15, 2020 14:57
+Serial number for this document is 20210322104248;
+Version 2021.3
+Monday March 22, 2021 10:42
 
 Things I changed:
 1. Introduction of CentOS8 notes and process. As of this writing installing the PCE on CentOS8 is not supported.
-2. A few notes on how to updrade the PCE/UI.
+2. A few notes on how to upgrade the PCE/UI.
 3. Move to markdown language for better display on github.
 4. Added more on setting up and running a multi-node cluster (MNC)
 ```
@@ -69,17 +69,26 @@ soft nproc 65535
 hard nofile 65535
 soft nofile 65535
 ```
+Edit nproc file specific to the OS you are using ...
 
-vim /etc/security/limits.d/90-nproc.conf (vim /etc/security/limits.d/20-nproc.conf
-for centos 7.x) and add this (clean up any duplication):
+For CentOS 6.x:
+```
+vim /etc/security/limits.d/90-nproc.conf
+```
+For CentOS 7.x:
+```
+vim /etc/security/limits.d/20-nproc.conf
+```
+... and add the following (clean up any duplication):
+
 ```
 hard nproc 65535
 soft nproc 65535
 ```
 
-In version 18.x+:
+For PCE version 18.x and above:
 ```
-vim /etc/sysctl.conf:
+vim /etc/sysctl.conf
 ```
 
 core nodes:
@@ -124,8 +133,7 @@ nameserver x.x.x.x
 (bzip2 required if you are using CentOS 7.x)
 ```
 yum -y install bzip2  
-rpm -ivh <substitute_illumio_pce_base_filename_here.rpm>
-rpm -ivh <substitute_illumio_pce_ui_filename_here.rpm>
+rpm -ivh <illumio_pce_core.rpm> illumio_pce_core_ui.rpm>
 ```
 note: If you upgrading your environment, see my upgrade notes towards the end of this file.
 
