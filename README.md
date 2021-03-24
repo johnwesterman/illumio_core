@@ -3,9 +3,9 @@
 ```
 Written by John Westerman.
 Illumio, Inc.
-Serial number for this document is 20210322104248;
+Serial number for this document is 20210324002135;
 Version 2021.3
-Monday March 22, 2021 10:42
+Wednesday March 24, 2021 00:21
 
 Things I changed:
 1. Introduction of CentOS8 notes and process. As of this writing installing the PCE on CentOS8 is not supported.
@@ -62,12 +62,12 @@ vim /etc/security/limits.conf
 ```
 add this to the bottom of this file:
 ```
-soft core unlimited
-hard core unlimited
-hard nproc 65535
-soft nproc 65535
-hard nofile 65535
-soft nofile 65535
+* soft core unlimited
+* hard core unlimited
+* hard nproc 65535
+* soft nproc 65535
+* hard nofile 65535
+* soft nofile 65535
 ```
 Edit nproc file specific to the OS you are using ...
 
@@ -82,8 +82,8 @@ vim /etc/security/limits.d/20-nproc.conf
 ... and add the following (clean up any duplication):
 
 ```
-hard nproc 65535
-soft nproc 65535
+* hard nproc 65535
+* soft nproc 65535
 ```
 
 For PCE version 18.x and above:
@@ -103,6 +103,14 @@ fs.file-max          = 2000000
 kernel.shmmax        = 60000000
 vm.overcommit_memory = 1
 ```
+snc0 nodes:
+```
+fs.file-max          = 2000000
+net.core.somaxconn   = 16384
+kernel.shmmax        = 60000000
+vm.overcommit_memory = 1
+```
+
 
 ## Set the hostname properly
 
@@ -590,3 +598,6 @@ While rare it has been known that a false start or mis-configuration will cause 
 ```
 sudo -u ilo-pce /opt/illumio-pce/illumio-pce-ctl reset
 ```
+Once you do a reset you will need to start the PCE. Once the PCE is in runlevel 1 you will need to recreate the database and set up the org as mentioned above. This is essentially starting over.
+
+If you are resetting because of an IP address change make sure that the IP address in DNS matches the IP address of the PCE. If you are doing local hosts make sure the IP addresses is correct there. Also make sure that the ip addresses used in the runtime file (/etc/illumio-pce/runtime_env.yml) are also correct. Any failure to rebuild properly should be corrected with a reset and database rebuild to set up the org properly.
