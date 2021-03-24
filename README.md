@@ -49,11 +49,11 @@ systemctl stop firewalld
 systemctl disable firewalld
 ```
 
-selinux needs to be in permissive mode, disabled preferred for testing.
+selinux can be in any mode including enforcing. I prefer it to be in permissive or disabled mode for testing. In production the parameter will be enforcing.
 ```
 vim /etc/selinux/config
 ```
-For testing, change from enforcing to disabled. In production the parameter will be enforcing.
+For testing, change from enforcing to disabled.
 
 ### PCE ONLY: Process and File Limits. Only required if workload count above 100. Skip to Install the PCE RPM step below if this change not needed.
 
@@ -327,6 +327,7 @@ So how to go about doing this.
 Once you have completed the work above you can continue to start and run the PCE.
 
 ## Start and run the PCE
+##### Note: This is also the start point for a system "reset" described at the end of this document.
 
 Start the PCE Software (on each node if running an MNC):
 ```
@@ -598,6 +599,10 @@ While rare it has been known that a false start or mis-configuration will cause 
 ```
 sudo -u ilo-pce /opt/illumio-pce/illumio-pce-ctl reset
 ```
-Once you do a reset you will need to start the PCE. Once the PCE is in runlevel 1 you will need to recreate the database and set up the org as mentioned above. This is essentially starting over.
+Once you do a reset you will need to start the PCE. Reference the section titled "Start and run the PCE" and "Initialize the PCE Software" above. Once the PCE is in runlevel 1 you will need to recreate the database and set up the org as mentioned above. This is essentially starting over.
 
-If you are resetting because of an IP address change make sure that the IP address in DNS matches the IP address of the PCE. If you are doing local hosts make sure the IP addresses is correct there. Also make sure that the ip addresses used in the runtime file (/etc/illumio-pce/runtime_env.yml) are also correct. Any failure to rebuild properly should be corrected with a reset and database rebuild to set up the org properly.
+If you have installed a VEN repo you do not have to recreate that step in the reset process.
+
+You have to rebuild the certificate unless that is something you want to do as a part of the reset. But do remember if you reset the certificate and have VENs paired they will need to be re-paired with the new certificate to work properly. Best to unpair, create new certificate and re-pair the workloads.
+
+If you are resetting because of an IP address change make sure that the IP address in DNS matches the IP address of the PCE. If you are doing local hosts reslolution make sure the IP addresses are correct there. Make sure that the ip addresses used in the runtime file (/etc/illumio-pce/runtime_env.yml) are correct. Any failure to rebuild properly should be corrected with a reset and database rebuild to set up the org properly.
