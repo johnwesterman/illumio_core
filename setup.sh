@@ -8,7 +8,7 @@
 # The purpose of this script is to install a minimal snc0
 # version of a PCE on a bare bones CentOS image.
 #
-# This script takes not parameters.
+# This script takes no parameters.
 #
 # This script assumes:
 # 1. An single RPM for PCE Core has been provided
