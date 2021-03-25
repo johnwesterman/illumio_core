@@ -5,7 +5,7 @@ Written by John Westerman.
 Illumio, Inc.
 Serial number for this document is 20210324220947;
 Version 2021.3
-Wednesday March 24, 2021 22:09
+Wednesday March 25, 2021 12:49
 
 Things I changed:
 1. Introduction of CentOS8 notes and process. As of this writing installing the PCE on CentOS8 is not supported.
@@ -13,11 +13,22 @@ Things I changed:
 3. Move to markdown language for better display on github.
 4. Added more on setting up and running a multi-node cluster (MNC).
 5. Focus on the ability to cut and pasted from this document into a command line as-is.
+6. Added automation script and languange on how to do an automated install from a simple shell command line.
 ```
 
 ## Install base packages:
 
 Note: Some of this is used during testing of PCE connectivity and will not be installed in production. Almost all of this is optional. You may find you do not need any of it to get your project off the ground.
+
+There are two ways I do this. The first is "bare minimum software" which will get you up and running in the shortest amount of time. The second is a ton of tools to do onsite troubleshooting for networking and such.
+
+For bare minimum:
+```
+yum update -y
+yum install -y net-tools bzip2 ntp
+```
+
+For all the gadgets:
 ```
 yum update -y
 yum install -y epel-release
@@ -378,14 +389,14 @@ I am assuming you install the tar file to the /tmp directory in the examples tha
 
 This command installs the PCE bundle:
 ```
-sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-NNNNNNNNN.tar.bz2
+sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-NNNNNNNNN.tar.bz2 --orgs all --default --no-prompt
 ```
 
-where NNNNNNNN is the build version downloaded from the web site.
+where NNNNNNNN is the build version downloaded from the web site. And if you desire to be prompted remove the --no-prompt option.
 
 For example:
 ```
-sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2
+sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2 --orgs all --default --no-prompt
 ```
 
 to set it as the default, you'd run this:
@@ -606,3 +617,27 @@ If you have installed a VEN repo you do not have to recreate that step in the re
 You have to rebuild the certificate unless that is something you want to do as a part of the reset. But do remember if you reset the certificate and have VENs paired they will need to be re-paired with the new certificate to work properly. Best to unpair, create new certificate and re-pair the workloads.
 
 If you are resetting because of an IP address change make sure that the IP address in DNS matches the IP address of the PCE. If you are doing local hosts reslolution make sure the IP addresses are correct there. Make sure that the ip addresses used in the runtime file (/etc/illumio-pce/runtime_env.yml) are correct. Any failure to rebuild properly should be corrected with a reset and database rebuild to set up the org properly.
+
+## Automation of an install
+
+There are a number of ways to automate an install. The way I am going to show you is how to script this using a standard unix shell (sh).
+
+For this example there are 2 main scripts:
+
+1. `copy_files.sh` - copies all the software to the CentOS host.
+2. `setup.sh` - runs a "hands off" installation.
+
+### A note on software you need to provide.
+
+The scripts are going to assume you are providing:
+
+1. An single RPM for PCE Core has been provided
+2. An single RPM for PCE UI has been provided
+3. A single VEN Bundle file has been provided if it is desired to be installed.
+
+Put these files in the current working directory. They will be copied to the proper locations on the CentOS host by the copy_files.sh script. These files will be used by the setup.sh script that is copied in the root directory of the CentOS host.
+
+Once the copy_files.sh script is run login as root to the CentOS host and run the setup.sh script located in the /root directory. If you like the defaults set up in the script it will run as-is. Or modify to your liking.
+
+I'll explain the resizedisk1.sh and resizedisk2.sh scripts at a later date.
+
