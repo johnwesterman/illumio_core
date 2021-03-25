@@ -3,15 +3,16 @@
 ```
 Written by John Westerman.
 Illumio, Inc.
-Serial number for this document is 20210324002135;
+Serial number for this document is 20210324220947;
 Version 2021.3
-Wednesday March 24, 2021 00:21
+Wednesday March 24, 2021 22:09
 
 Things I changed:
 1. Introduction of CentOS8 notes and process. As of this writing installing the PCE on CentOS8 is not supported.
 2. A few notes on how to upgrade the PCE/UI.
 3. Move to markdown language for better display on github.
-4. Added more on setting up and running a multi-node cluster (MNC)
+4. Added more on setting up and running a multi-node cluster (MNC).
+5. Focus on the ability to cut and pasted from this document into a command line as-is.
 ```
 
 ## Install base packages:
@@ -111,7 +112,6 @@ kernel.shmmax        = 60000000
 vm.overcommit_memory = 1
 ```
 
-
 ## Set the hostname properly
 
 CentOS7: Set the host name:
@@ -169,7 +169,7 @@ In order to apply the new hostname, a system reboot is required, issue **one** o
 ```
 1: init 6
 2: systemctl reboot
-3: shutdown -r
+3: shutdown -r now
 ```
 
 ## Certificate installation(s)
@@ -311,7 +311,7 @@ Finally, run "sudo update-ca-certificates"
 
 In most cases this document is used to set up a quick testing environment for functional testing using a single node (SNC). Normally a SNC is not used in production. Occasionally there is a need to set up a multi-node cluster (MNC) in a test environment. Here are some of my thoughts with that process.
 
-Typically the setup will be run ("illumio-pce-env setup") on the core node only. That will generate a runtime yaml file and put it in the /etc/illumio-pce/runtime_env.yml file. This file will be a template in an MNC. In that file there are things that need to be consistent in the cluster:
+Typically the setup will be run ("illumio-pce-env setup") on one core node only. That will generate a runtime yaml file and put it in the /etc/illumio-pce/runtime_env.yml file. This file will be a template in for all of the nodes consituting the MNC. In that file there are things that need to be consistent in the cluster:
 
 * The certificate used in this process is the certificate used on all of the nodes. There will be only one certificate and one private key for all nodes. The certificate and private key are the same for all nodes. The point is once you have generated a proper certificate above you have what you need for the cluster nodes.
 * The runtime_env.yml file will be mostly the same between all the nodes. The only thing that will likely be different is the **"node_type:"** directive. For the cores it is "core" and for the data nodes it's "data1" and "data2" in a 4 node cluster.
@@ -324,7 +324,7 @@ So how to go about doing this.
 * Copy the **/etc/illumio-pce/runtime_env.yml** to each of the other nodes **/etc/illumio-pce/runtime_env**.
 * Make relevant changes as indicated above to each of the other nodes changing their "node_type" to reflect the function of the node.
 
-Once you have completed the work above you can continue to start and run the PCE.
+Once you have completed the work above you can continue to start and run the PCE MNC just like you would for an SNC. These steps follow.
 
 ## Start and run the PCE
 ##### Note: This is also the start point for a system "reset" described at the end of this document.
