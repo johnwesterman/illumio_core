@@ -378,19 +378,19 @@ I am assuming you install the tar file to the /tmp directory in the examples tha
 
 This command installs the PCE bundle:
 ```
-	sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-NNNNNNNNN.tar.bz2
+sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-NNNNNNNNN.tar.bz2
 ```
 
 where NNNNNNNN is the build version downloaded from the web site.
 
 For example:
 ```
-    sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2
+sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2
 ```
 
 to set it as the default, you'd run this:
 ```
-    sudo -u ilo-pce illumio-pce-ctl ven-software-release-set-default 19.3.0-6104
+sudo -u ilo-pce illumio-pce-ctl ven-software-release-set-default 19.3.0-6104
 ```
 
 ## PAIRING VENs for LINUX Examples
