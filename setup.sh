@@ -16,8 +16,8 @@
 # 3. A single VEN Bundle file has been provided if it is desired to be installed.
 
 if [ "$1" == "" ]; then
-	echo "No IP address provided so I am using the host IP."
 	ipaddr=$(hostname -I)
+	echo "No IP address provided so I am using the host IP: " $ipaddr
 else
 	ipaddr=$1
 fi
@@ -94,13 +94,16 @@ alias ctlenv='sudo -u ilo-pce /opt/illumio-pce/illumio-pce-env'
 source /root/pcealiases
 
 # set up the base PCE
+echo "Setting up the PCE now."
 ctl start --runlevel 1; ctl status -svw
 ctldb setup; ctl set-runlevel 5; ctl status -svw
 
 # set up a demo user
+echo "Setting up a demo user."
 sudo -u ilo-pce ILO_PASSWORD=Illumio123  /opt/illumio-pce/illumio-pce-db-management create-domain --user-name demo@illumio.com --full-name "Demo User" --org-name "Illumio"
 
 # set up the VEN repo
+echo "Setting up the VEN repo."
 if [ -e /tmp/illumio-ven-bundle-* ]; then
 	chmod 777 /tmp/illumio-ven-bundle-*
 	ctl ven-software-install /tmp/illumio-ven-bundle-* --orgs all --default --no-prompt
