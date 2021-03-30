@@ -338,23 +338,29 @@ So how to go about doing this.
 Once you have completed the work above you can continue to start and run the PCE MNC just like you would for an SNC. These steps follow.
 
 ## Start and run the PCE
+
 ##### Note: This is also the start point for a system "reset" described at the end of this document.
 
 Start the PCE Software (on each node if running an MNC):
+
 ```
 ctl start --runlevel 1
 ctl status -svw
 ```
+
 NOTE: if PCE doesn't have running status in a minute or two go back and check your work
 
 If a multi-node cluster is being used, verify the Data "Master NODE" election:
+
 ```
 ctldb show-master
 ```
+
 NOTE: You will use the master node information in the next step. The command above will return the IP address of the master node. Do to initialize the PCE you will do so on the master data node.
 
 ## Initialize the PCE Software:
 NOTE: Do the following ON THE DATABASE MASTER NODE determined FROM ABOVE
+
 ```
 ctldb setup
 ctl set-runlevel 5 (this will set the runlevel on all nodes)
@@ -363,16 +369,21 @@ ctl cluster-status
 ```
 
 If above everything statuses good open a browser and go to:
+
 ```
 https://<pce_fqdn>:8443/login
 ```
+
 should get you in to the landing page.
 
 ### Now, create a new user:
+
 **NOTE: Do the following on SNC0 (CORE0 node in a multi-node cluster)**
+
 ```
 ctldb create-domain --user-name user@your_domain.com --full-name 'Demo User' --org-name 'Illumio'
 ```
+
 You are done.
 
 Now, log into the system and start pairing.
@@ -388,6 +399,7 @@ Once you obtain this file copy it to the /tmp directory of the core0 node. The r
 I am assuming you install the tar file to the /tmp directory in the examples that follow.
 
 This command installs the PCE bundle:
+
 ```
 sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-NNNNNNNNN.tar.bz2 --orgs all --default --no-prompt
 ```
@@ -395,11 +407,13 @@ sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-NNN
 where NNNNNNNN is the build version downloaded from the web site. And if you desire to be prompted remove the --no-prompt option.
 
 For example:
+
 ```
 sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2 --orgs all --default --no-prompt
 ```
 
 to set it as the default, you'd run this:
+
 ```
 sudo -u ilo-pce illumio-pce-ctl ven-software-release-set-default 19.3.0-6104
 ```
@@ -447,7 +461,7 @@ Solaris:
 /opt/illumio_ven/illumio-ven-ctl activate --management-server pcecluster.poc.segmentationpov.com:8443 --activation-code [your activation code] --mode illuminated
 ```
 
-## UNPAIRING A LINUX VEN:
+## UNPAIRING A LINUX VEN
 
 ```
 /opt/illumio_ven/illumio-ven-ctl –help
@@ -482,40 +496,49 @@ Options:
    open           Remove all firewall rules and leave all ports open.
 
 The Windows version will be similar in command structure (See below)
+```
 
-## PAIRING VENs for WINDOWS Examples       
+## PAIRING VENs for WINDOWS Examples
 
-all of the following is done via Powershell. You need to run Powershell as ADMINISTRATOR.
+All of the following is done via Powershell. You need to run Powershell as **ADMINISTRATOR**.
+
 The VEN admin files are stored here: c:/program files/illumio/admin/*
 
-When installing the MSI package use this method so we have a log of the install:
+When installing the MSI package use this method so there is a log of the install:
+
+```
 msiexec /i ven-install.msi /qn /l*vx VENInstaller.log
+```
 
 This allows you to run scripts from the command line:
 
+```
 Set-ExecutionPolicy -Scope process remotesigned -Force;
 ```
 
 ### This is typical for a repo:
+
 ```
 Set-ExecutionPolicy -Scope process remotesigned -Force; Start-Sleep -s 3; (New-Object System.Net.WebClient).DownloadFile("[management-server]/17.2-lfIrs0yeKQ8mcOpdnIpLQ5AFzyB/pair.ps1", "$pwd\Pair.ps1"); .\Pair.ps1 -repo-host repo.illum.io -repo-dir 17.2-lfIrs0yeKQ8mcOpdnIpLQ5AFzyB/ -repo-https-port 443 -management-server demo4.illum.io:443 -activation-code  [your activation code]; Set-ExecutionPolicy -Scope process undefined -Force;
 ```
 
 This command is located in c:/windows/program files/illumio/   (not bin)
 
-1.	Install the MSI package
-2.	cd c:\windows\program files\illumio
-3.	./illumio-ven-ctl activate -management-server [management-server]:8443 -activation-code  [your activation code]
+1. Install the MSI package
+2. cd c:\windows\program files\illumio
+3. ./illumio-ven-ctl activate -management-server [management-server]:8443 -activation-code  [your activation code]
 
 If you get a certificate error you may have to install the certificate bundle. [Find out how to install bundle on Windows with this link](
 http://www.thewindowsclub.com/manage-trusted-root-certificates-windows).
 
-Once the VEN is installed on Windows if you want to see the filters the "iptables --list -an" eqivalent command is: "netsh wfp show filters"
+If you want to see the filters Once the VEN is installed on Windows: the "iptables --list -an" eqivalent Windows command is: "**netsh wfp show filters**"
 
 To unpair a windows workload:
+
 ```
 c:/program files/illumio/admin/unpair.ps1 open
 ```
+
 ## runtime_env settings and suggessted settings
 NOTE: I strongly recommend you consider adding the following to the runtime_env.yml file.
 Especially the internal_service_ip option. If you do no bind to an IP address and let the
