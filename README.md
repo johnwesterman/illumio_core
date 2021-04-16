@@ -14,6 +14,8 @@ Things I changed:
 4. Added more on setting up and running a multi-node cluster (MNC).
 5. Focus on the ability to cut and pasted from this document into a command line as-is.
 6. Added automation script and languange on how to do an automated install from a simple shell command line.
+7. Added some in-document links to make navigation easier.
+8. Added my method for backing up the datbase on an SNC
 ```
 
 ## Install base packages:
@@ -668,7 +670,7 @@ I'll explain the resizedisk1.sh and resizedisk2.sh scripts at a later date.
 
 ## <a name=backups>Backing up the database </a>
 
-You can find more information on backing up the data in a PCE by going to [Illumio Documenation](https://docs.illumio.com/). When I create an SNC that I am going to use for a while I'll make sure I have regular backups. I do this with cron.
+You can find more information on backing up the data in a PCE by going to [Illumio Documenation](https://docs.illumio.com/). When I create an SNC that I am going to use for a while I'll make sure I have regular backups. I do this with cron. If you do this in production it may look a little different. The important thing about the back up is to make it first but then to get it off the box so if anything happens your backup easily recovered and can be used to re-instantiate a system.
 
 ```
 My crontab looks like this:
