@@ -3,9 +3,9 @@
 ```
 Written by John Westerman.
 Illumio, Inc.
-Serial number for this document is 20210324220947;
-Version 2021.3
-Wednesday March 25, 2021 12:49
+Serial number for this document is 20210416154516;
+Version 2021.4
+Friday April 16, 2021 15:45
 
 Things I changed:
 1. Introduction of CentOS8 notes and process. As of this writing installing the PCE on CentOS8 is not supported.
@@ -337,7 +337,7 @@ So how to go about doing this.
 
 Once you have completed the work above you can continue to start and run the PCE MNC just like you would for an SNC. These steps follow.
 
-## Start and run the PCE
+## [Start and run the PCE](#pce-start)
 
 ##### Note: This is also the start point for a system "reset" described at the end of this document.
 
@@ -633,7 +633,7 @@ While rare it has been known that a false start or mis-configuration will cause 
 ```
 sudo -u ilo-pce /opt/illumio-pce/illumio-pce-ctl reset
 ```
-Once you do a reset you will need to start the PCE. Reference the section titled "Start and run the PCE" and "Initialize the PCE Software" above. Once the PCE is in runlevel 1 you will need to recreate the database and set up the org as mentioned above. This is essentially starting over.
+Once you do a reset you will need to start the PCE. Reference the section titled <a name=pce-start> "Start and run the PCE"</a> and "Initialize the PCE Software" above. Once the PCE is in runlevel 1 you will need to recreate the database and set up the org as mentioned above. This is essentially starting over.
 
 If you have installed a VEN repo you do not have to recreate that step in the reset process.
 
