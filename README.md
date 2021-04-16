@@ -628,12 +628,14 @@ The file ilo-vpngen.sh can be obtained from Illuio Support, an Illumio SE or Ill
 
 ## Reseting an environment
 
-While rare it has been known that a false start or mis-configuration will cause a system to need to be reset. This command should be used with caution as it will reset the persistent data store and other critical data in the system. If you are using a MNC this will need to be done on every node that is in a cluster. The command is very destructive to a running system. You should have a backup of your data before doing this if that is desired.
+While rare it has been known that a false start or mis-configuration will cause a system to need to be reset. This command should be used with caution as it will reset the persistent data store and other critical data in the system. If you are using a MNC this will need to be done on every node that is in a cluster.
+
+The command is very destructive to a running system. This is essentially starting over. All of the database contents will be irreversably deleted. [You should have a backup](#backups) of your data before doing this if that is desired.
 
 ```
 sudo -u ilo-pce /opt/illumio-pce/illumio-pce-ctl reset
 ```
-Once you do a reset you will need to start the PCE. Reference the section titled ["Start and run the PCE"](#pce-start) and "Initialize the PCE Software" above. Once the PCE is in runlevel 1 you will need to recreate the database and set up the org as mentioned above. This is essentially starting over.
+Once you do a reset you will need to start the PCE. Reference the section titled ["Start and run the PCE"](#pce-start) and "Initialize the PCE Software" above. Once the PCE is in runlevel 1 you will need to recreate the database and set up the org as mentioned above.  
 
 If you have installed a VEN repo you do not have to recreate that step in the reset process.
 
@@ -664,3 +666,19 @@ Once the copy_files.sh script is run login as root to the CentOS host and run th
 
 I'll explain the resizedisk1.sh and resizedisk2.sh scripts at a later date.
 
+## <a name=backups>Backing up the database </a>
+
+You can find more information on backing up the data in a PCE by going to [Illumio Documenation](https://docs.illumio.com/). When I create an SNC that I am going to use for a while I'll make sure I have regular backups. I do this with cron.
+
+```
+My crontab looks like this:
+MAILTO = (your e-mail address)
+SHELL=/bin/bash
+
+1 0 * * * : Backup PCE database ; sudo -u ilo-pce /opt/illumio-pce/illumio-pce-db-management dump --file /home/ilo-pce/pce_backups/`/bin/date +'\%Y_\%m_\%d_\%H\%M'`_automated_backup_pce_database
+
+# only keep the last 60 backups
+0 0 * * * find /home/ilo-pce/pce_backups -mtime +60 -delete
+```
+
+What the above will do is every morning at 1am a backup will be made and put in a specific directory. It will also make sure there are no more than X copies of the database files; in this case 60 days worth.
