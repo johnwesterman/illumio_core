@@ -3,9 +3,9 @@
 ```
 Written by John Westerman.
 Illumio, Inc.
-Serial number for this document is 20210416154516;
+Serial number for this document is 20210420095605;
 Version 2021.4
-Friday April 16, 2021 15:45
+Tuesday April 20, 2021 09:56
 
 Things I changed:
 1. Introduction of CentOS8 notes and process. As of this writing installing the PCE on CentOS8 is not supported.
@@ -624,9 +624,21 @@ Customers using Illumio’s SaaS Cloud Edition PCE. This applies only to on-prem
 
 Technically speaking, on the IIlumio PCE cluster, REST API over HTTPS calls are received by a PCE core node. The HTTPS (TLS/SSL) portion is terminated on the core node. Subsequently, some intra-cluster communication (between PCE nodes) happens over TLS, and some intra-cluster communication occurs using plaintext protocols. For example, if a REST call needs to be load balanced to the other core node, the REST call is forwarded using HTTP (plaintext). If the other PCE core node is in a different data center, then the REST traffic could potentially could be sent over a insecure (e.g. shared) WAN link. REST calls contain an Authentication header, which has a base64-encoded username:password string. If this plaintext traffic is snooped on the WAN link, then it's possible for the authentication data to be read.
 
-### Obtaining ILO-VPNGEN
+### ILO-VPNGEN for multi-node security
 
-The file ilo-vpngen.sh can be obtained from Illuio Support, an Illumio SE or Illumio PS person. Also reference the official web site above for all of the details. [Illumio Support for ilo-vpngen.](https://support.illumio.com/knowledge-base/articles/Enabling-encryption-with-ilo-vpngen.html)
+The file ilo-vpngen.sh can be obtained from Illumio Support, an Illumio SE or Illumio PS team member. Also reference the official web site above for all of the details. [Illumio Support for ilo-vpngen.](https://support.illumio.com/knowledge-base/articles/Enabling-encryption-with-ilo-vpngen.html)
+
+### ILO-PIPGEN for single-node security
+
+When the Illumio Policy Compute Engine (PCE) is deployed on-premise, there are several connections between PCE components running on different nodes. Illumio recommends restricting connectivity to PCE hosts such that connections to these components cannot be made from external sources.
+
+All PCE components listen for connections on TCP and UDP ports in stable, documented ranges. Illumio requires that all PCE nodes be allowed to communicate freely with each other but recommends that no other inbound connections be accepted to ports in these ranges.
+
+Illumio ASP protects critical assets using microsegmentation, and this control can be provided to all other applications using the Virtual Enforcement Node (VEN). However, running the VEN on the hosts running Illumio’s PCE is not supported at this time for operational reasons.
+
+Illumio has provided a utility to help customers configure iptables on each PCE host in such a way that PCE components are protected but other services are unaffected. This utility, called ilo-pipgen (attached below), can be used with new or existing PCE deployments. With this solution, inbound connections to PCE components are permitted only from other PCE hosts and not from any other sources.
+
+To obtain and use instructions for ilo-pipgen [go here](https://support.illumio.com/knowledge-base/articles/Configuring-iptables-on-PCE-hosts-with-ilo-pipgen.html). It can also be obtained from Illumio Support, an Illumio SE or Illumio PS team members.
 
 ## Reseting an environment
 
