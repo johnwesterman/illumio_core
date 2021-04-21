@@ -3,9 +3,9 @@
 ```
 Written by John Westerman.
 Illumio, Inc.
-Serial number for this document is 20210420095605;
+Serial number for this document is 20210421175621;
 Version 2021.4
-Tuesday April 20, 2021 09:56
+Wednesday April 21, 2021 17:56
 
 Things I changed:
 1. Introduction of CentOS8 notes and process. As of this writing installing the PCE on CentOS8 is not supported.
@@ -324,7 +324,7 @@ Finally, run "sudo update-ca-certificates"
 
 In most cases this document is used to set up a quick testing environment for functional testing using a single node (SNC). Normally a SNC is not used in production. Occasionally there is a need to set up a multi-node cluster (MNC) in a test environment. Here are some of my thoughts with that process.
 
-Typically the setup will be run ("illumio-pce-env setup") on one core node only. That will generate a runtime yaml file and put it in the /etc/illumio-pce/runtime_env.yml file. This file will be a template in for all of the nodes consituting the MNC. In that file there are things that need to be consistent in the cluster:
+Typically the setup will be run ("illumio-pce-env setup") on one core node only. That will generate a runtime yaml file and put it in the /etc/illumio-pce/runtime_env.yml file. This file will be a template in for all of the nodes constituting the MNC. In that file there are things that need to be consistent in the cluster:
 
 * The certificate used in this process is the certificate used on all of the nodes. There will be only one certificate and one private key for all nodes. The certificate and private key are the same for all nodes. The point is once you have generated a proper certificate above you have what you need for the cluster nodes.
 * The runtime_env.yml file will be mostly the same between all the nodes. The only thing that will likely be different is the **"node_type:"** directive. For the cores it is "core" and for the data nodes it's "data1" and "data2" in a 4 node cluster.
@@ -614,19 +614,12 @@ Within the cluster, connections may be encrypted or plaintext. Some plaintext co
 
 This risk applies only to connections between nodes in one PCE cluster. The following are NOT impacted:
 
-Connections to the PCE by the Virtual Enforcement Node (VEN) or web console. These always use TLS.
-
-Connections between PCE clusters in a supercluster configuration. These always use TLS.
-
-Single-node cluster (SNC) deployments, which do not make any outbound connections.
-
-Customers using Illumio’s SaaS Cloud Edition PCE. This applies only to on-premise customer deployments.
+1. Connections to the PCE by the Virtual Enforcement Node (VEN) or web console. These always use TLS.
+1. Connections between PCE clusters in a supercluster configuration. These always use TLS.
+1. Single-node cluster (SNC) deployments, which do not make any outbound connections.
+1. Customers using Illumio’s SaaS Cloud Edition PCE. This applies only to on-premise customer deployments.
 
 Technically speaking, on the IIlumio PCE cluster, REST API over HTTPS calls are received by a PCE core node. The HTTPS (TLS/SSL) portion is terminated on the core node. Subsequently, some intra-cluster communication (between PCE nodes) happens over TLS, and some intra-cluster communication occurs using plaintext protocols. For example, if a REST call needs to be load balanced to the other core node, the REST call is forwarded using HTTP (plaintext). If the other PCE core node is in a different data center, then the REST traffic could potentially could be sent over a insecure (e.g. shared) WAN link. REST calls contain an Authentication header, which has a base64-encoded username:password string. If this plaintext traffic is snooped on the WAN link, then it's possible for the authentication data to be read.
-
-### ILO-VPNGEN for multi-node security
-
-The file ilo-vpngen.sh can be obtained from Illumio Support, an Illumio SE or Illumio PS team member. Also reference the official web site above for all of the details. [Illumio Support for ilo-vpngen.](https://support.illumio.com/knowledge-base/articles/Enabling-encryption-with-ilo-vpngen.html)
 
 ### ILO-PIPGEN for single-node security
 
@@ -639,6 +632,10 @@ Illumio ASP protects critical assets using microsegmentation, and this control c
 Illumio has provided a utility to help customers configure iptables on each PCE host in such a way that PCE components are protected but other services are unaffected. This utility, called ilo-pipgen (attached below), can be used with new or existing PCE deployments. With this solution, inbound connections to PCE components are permitted only from other PCE hosts and not from any other sources.
 
 To obtain and use instructions for ilo-pipgen [go here](https://support.illumio.com/knowledge-base/articles/Configuring-iptables-on-PCE-hosts-with-ilo-pipgen.html). It can also be obtained from Illumio Support, an Illumio SE or Illumio PS team members.
+
+### ILO-VPNGEN for multi-node security
+
+The file ilo-vpngen.sh can be obtained from Illumio Support, an Illumio SE or Illumio PS team member. Also reference the official web site above for all of the details. [Illumio Support for ilo-vpngen.](https://support.illumio.com/knowledge-base/articles/Enabling-encryption-with-ilo-vpngen.html)
 
 ## Reseting an environment
 
@@ -670,8 +667,8 @@ For this example there are 2 main scripts:
 
 The scripts are going to assume you are providing:
 
-1. An single RPM for PCE Core has been provided
-2. An single RPM for PCE UI has been provided
+1. A single RPM for PCE Core has been provided
+2. A single RPM for PCE UI has been provided
 3. A single VEN Bundle file has been provided if it is desired to be installed.
 
 Put these files in the current working directory. They will be copied to the proper locations on the CentOS host by the copy_files.sh script. These files will be used by the setup.sh script that is copied in the root directory of the CentOS host.
