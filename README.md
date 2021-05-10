@@ -4,8 +4,8 @@
 Written by John Westerman.
 Illumio, Inc.
 Serial number for this document is 20210421175621;
-Version 2021.4
-Wednesday April 21, 2021 17:56
+Version 2021.5
+May 10, 2021 16:42
 
 Things I changed:
 1. Introduction of CentOS8 notes and process. As of this writing installing the PCE on CentOS8 is not supported.
@@ -249,6 +249,10 @@ And another check that is displayed a little easier to read is to ask the PCE ab
 
 ```
 ctlenv setup -ql --test 5
+
+-or-
+
+ /opt/illumio-pce/illumio-pce-env setup --test 5 --list
 ```
 
 NOTE: You should see the full chain here. You also want the following extended attributes:
