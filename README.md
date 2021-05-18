@@ -1,11 +1,13 @@
 # Illumio Core PCE install Cliff Notes
+
 ## Simplified step by step for the PCE core install
+
 ```
 Written by John Westerman.
 Illumio, Inc.
-Serial number for this document is 20210421175621;
+Serial number for this document is 20210518153848;
 Version 2021.5
-May 10, 2021 16:42
+May 18, 2021 15:38
 
 Things I changed:
 1. Introduction of CentOS8 notes and process. As of this writing installing the PCE on CentOS8 is not supported.
@@ -16,9 +18,10 @@ Things I changed:
 6. Added automation script and languange on how to do an automated install from a simple shell command line.
 7. Added some in-document links to make navigation easier.
 8. Added my method for backing up the datbase on an SNC
+9. Removed reference to vim using vi instead.
 ```
 
-## Install base packages:
+## Install base packages
 
 Note: Some of this is used during testing of PCE connectivity and will not be installed in production. Almost all of this is optional. You may find you do not need any of it to get your project off the ground.
 
@@ -34,7 +37,7 @@ For all the gadgets:
 ```
 yum update -y
 yum install -y epel-release
-yum install -y vim bind-utils openssh-clients telnet syslog-ng traceroute tcpdump ipset postfix logrotate ca-certificates ntp procps-ng util-linux net-tools
+yum install -y bind-utils openssh-clients telnet syslog-ng traceroute tcpdump ipset postfix logrotate ca-certificates ntp procps-ng util-linux net-tools
 ```
 ## Firewall and SE Linux configuration
 
@@ -65,14 +68,14 @@ systemctl disable firewalld
 
 selinux can be in any mode including enforcing. I prefer it to be in permissive or disabled mode for testing. In production the parameter will be enforcing.
 ```
-vim /etc/selinux/config
+vi /etc/selinux/config
 ```
 For testing, change from enforcing to disabled.
 
 ### PCE ONLY: Process and File Limits. Only required if workload count above 100. Skip to Install the PCE RPM step below if this change not needed.
 
 ```
-vim /etc/security/limits.conf
+vi /etc/security/limits.conf
 ```
 add this to the bottom of this file:
 ```
@@ -87,11 +90,11 @@ Edit nproc file specific to the OS you are using ...
 
 For CentOS 6.x:
 ```
-vim /etc/security/limits.d/90-nproc.conf
+vi /etc/security/limits.d/90-nproc.conf
 ```
 For CentOS 7.x:
 ```
-vim /etc/security/limits.d/20-nproc.conf
+vi /etc/security/limits.d/20-nproc.conf
 ```
 ... and add the following (clean up any duplication):
 
@@ -102,7 +105,7 @@ vim /etc/security/limits.d/20-nproc.conf
 
 For PCE version 18.x and above:
 ```
-vim /etc/sysctl.conf
+vi /etc/sysctl.conf
 ```
 
 core nodes:
@@ -136,16 +139,16 @@ Make sure the /etc/hosts name for this FQDN is the same as /etc/sysconfig/networ
 
 ### First:
 ```
-vim /etc/sysconfig/network
+vi /etc/sysconfig/network
 NETWORKING=yes
 HOSTNAME=[your-new-hostname]
 ```
 
 ### Second:
 ```
-vim /etc/hosts
+vi /etc/hosts
 x.x.x.x	xxx
-vim /etc/resolv.conf
+vi /etc/resolv.conf
 nameserver x.x.x.x
 ```
 
