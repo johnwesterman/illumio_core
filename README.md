@@ -10,7 +10,7 @@ Version 2021.6
 Monday June 07, 2021 14:50
 
 Things I changed:
-1. Introduction of CentOS8 notes and process. As of this writing installing the PCE on CentOS8 is not supported.
+1. Introduction of CentOS8 notes and process.
 2. A few notes on how to upgrade the PCE/UI.
 3. Move to markdown language for better display on github.
 4. Added more on setting up and running a multi-node cluster (MNC).
