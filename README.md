@@ -11,14 +11,9 @@ Monday June 07, 2021 14:50
 
 Things I changed:
 1. Introduction of CentOS8 notes and process.
-2. A few notes on how to upgrade the PCE/UI.
-3. Move to markdown language for better display on github.
-4. Added more on setting up and running a multi-node cluster (MNC).
-5. Focus on the ability to cut and pasted from this document into a command line as-is.
-6. Added automation script and languange on how to do an automated install from a simple shell command line.
-7. Added some in-document links to make navigation easier.
-8. Added my method for backing up the datbase on an SNC
-9. Removed reference to vim using vi instead.
+2. PCE 21.2.1+ supports installation on CentOS8.
+3. Added my method for backing up the datbase on an SNC.
+4. Added more detail on how to harden the PCE in a production environment.
 ```
 
 ## Install base packages
