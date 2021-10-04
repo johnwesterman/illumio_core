@@ -274,6 +274,19 @@ star_poc_segmentationpov_com.pem - Server private key
 star_poc_segmentationpov_com_bundle.crt - Certificate bundle
 ```
 
+And other commands to check certificates that are helpful:
+
+```
+openssl x509 -issuer -noout -in certificate_name.crt
+openssl x509 -subject -noout -in certificate_name.crt
+
+and you can combine these:
+
+openssl x509 -subject -issuer -noout -in certificate_name.crt
+```
+
+These can help in identifying certificates, validating order, etc.
+
 ## Preparing the certificate and key files to be used
 
 The Illumio PCE installer program installs the certificate and private keys as follows:
