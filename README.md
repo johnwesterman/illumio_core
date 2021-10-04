@@ -3,17 +3,16 @@
 ## Simplified step by step for the PCE core install
 
 ```
-Written by John Westerman.
-Illumio, Inc.
-Serial number for this document is 20210607145010;
-Version 2021.6
-Monday June 07, 2021 14:50
+Author: John Westerman, Illumio, Inc.
+Serial number for this document is 20211004104532;
+Version 2021.10
+Monday October 04, 2021 10:45
 
 Things I changed:
-1. Introduction of CentOS8 notes and process.
-2. PCE 21.2.1+ supports installation on CentOS8.
-3. Added my method for backing up the datbase on an SNC.
-4. Added more detail on how to harden the PCE in a production environment.
+1. Minor updates to a few sections.
+2. Highlighting for easier read
+3. More information on VEN compatibility Matrix
+4. More inform 
 ```
 
 ## Install base packages
@@ -197,7 +196,7 @@ trusted_ca_bundle [/etc/ssl/certs/ca-bundle.crt]
 
 NOTE: Once you have a private key and certificate bundle the same will be used on each of the nodes in a cluster. If you are using an SNC you only need to place it in the proper place once. If you are using an MNC you will need to replicate the data across all of the nodes. The good news is that the same information is used for all nodes. Unique certificates are not required.
 
-## Set up the PCE environment
+## Setting up the PCE environment
 
 AS ROOT user:
 ```
@@ -308,7 +307,7 @@ If necessary (it usually isn't) the trusted CA bundle into /etc/ssl/certs/ca-bun
 
 There should be no reason to do this with a valid certificate. This will only be required when there is no CA or the certificate chain can not be validated by the host. Sometimes (COMODO) there are more than 1 (often 2) intermediate certificates in use. You will need to combine the server certificate with all the intermedia and finally the root certificate chain. And do so in order: Server, then all intermediates, then the root certificate in one file.
 
-Note: If either the PCE or the VENs do not have access to the CA (that is, the CA is *not* known internally) copy the root and intermediate certificates using any file name to: /etc/pki/ca-trust/source/anchors/ then run these commands:
+Note: If either the PCE or the VENs do not have access to the CA (that is, the CA is *not* known internally) copy the root and intermediate certificates using any file name to: **/etc/pki/ca-trust/source/anchors/** then run these commands:
 ```
 update-ca-trust force-enable
 update-ca-trust extract
@@ -360,7 +359,7 @@ NOTE: if PCE doesn't have running status in a minute or two go back and check yo
 If a multi-node cluster is being used, verify the Data "Master NODE" election:
 
 ```
-ctldb show-master
+ctldb show-primary
 ```
 
 NOTE: You will use the master node information in the next step. The command above will return the IP address of the master node. Do to initialize the PCE you will do so on the master data node.
@@ -397,6 +396,18 @@ Now, log into the system and start pairing.
 
 The PCE is up and running at this point. You should have a clean, freshly installed system ready to pair workloads.
 
+## VEN Compatibility Matrix
+
+NOTE: The compatibility matrix must be uploaded to the PCE before you upload any VEN software bundles in the next step or you will get an error.
+
+As part of setting up the VEN Library in the PCE, you must upload the VEN upgrade compatibility matrix to the PCE. The compatibility matrix contains information about valid VEN upgrade paths and VEN to PCE version compatibility. To use the PCE web console and the Illumio Core REST API, you must upload this matrix for VEN upgrades to be successful.
+
+You will find the VEN Compatibility Matrix on the Illumio support site. Once this is obtained, copy to the /tmp directory of one of the PCE core nodes and run the following command:
+
+```
+sudo -u ilo-pce illumio-pce-ctl ven-software-install --compatibility-matrix [matrix_file_path_and_name]
+```
+
 ## Set up the VEN repository.  
 
 It is recommended that you use the cluster to also be a repository for the VEN software. This section will walk you through that process. You will need to get the VEN bundles you will need from the Illumio Support web site. They will be clearly identified in the VEN download section of the software download area. They will have a .bz2 extenstion.
@@ -423,6 +434,12 @@ to set it as the default, you'd run this:
 
 ```
 sudo -u ilo-pce illumio-pce-ctl ven-software-release-set-default 19.3.0-6104
+```
+
+You can also combine the compatibility matrix and VEN software install like this:
+
+```
+sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2 --compatibility-matrix /tmp/illumio-release-compatibility-8.tar.bz2
 ```
 
 ## PAIRING VENs for LINUX Examples
@@ -540,11 +557,35 @@ http://www.thewindowsclub.com/manage-trusted-root-certificates-windows).
 
 If you want to see the filters Once the VEN is installed on Windows: the "iptables --list -an" eqivalent Windows command is: "**netsh wfp show filters**"
 
-To unpair a windows workload:
+To deactivate a Windows VEN:
+
+Deactivating a VEN will "unpair" the VEN from the PCE without removing the VEN software from the host. This can be done when unpairing is desired with a subsequent repair with a different pairing profile.
+
+```
+PS C:\Program Files\Illumio> .\illumio-ven-ctl.ps1 deactivate
+```
+
+To "unpair" a windows workload:
+
+"Unpairing" a VEN like we are doing here will perform both an unpair operation as well as full software removal. In the example below it will also remove any rules and put the machine in a completely open state without any firewalling at the kernel.
 
 ```
 c:/program files/illumio/admin/unpair.ps1 open
 ```
+
+### Options for unpairing
+
+**recommended**: Uninstalls the VEN and temporarily allows only SSH/22 until reboot.
+
+Security implications: If this workload is running a production application, it could break because this workload will no longer allow any connections to it other than SSH on port 22.
+
+**saved**: Uninstalls the VEN and reverts to pre-Illumio policy from when the VEN was first installed. Revert the state of the workload's iptables to the state they were in at the moment before the VEN was installed. The dialog will display the amount of time that has passed since the VEN was installed.
+
+Security implications: Depending on how old the iptables configuration are on the workload, VEN removal could impact the application.
+
+**open**: Uninstalls the VEN and leaves all ports on the workload open.
+
+Security implications: If iptables or Illumio were the only security being used for this workload, the workload will be opened up to anyone and become vulnerable to attack.
 
 ## runtime_env settings and suggested settings
 NOTE: I strongly recommend you consider adding the following to the runtime_env.yml file.
@@ -590,7 +631,7 @@ ctl start --runlevel 1;ctl status -svw
 -- wait for the nodes to come up in run level 1 state
 To figure out which DB is the DB "master":
 ```
-ctldb show-master
+ctldb show-primary
 ```
 Do the following on the master database node only:
 ```
@@ -627,6 +668,8 @@ This risk applies only to connections between nodes in one PCE cluster. The foll
 Technically speaking, on the IIlumio PCE cluster, REST API over HTTPS calls are received by a PCE core node. The HTTPS (TLS/SSL) portion is terminated on the core node. Subsequently, some intra-cluster communication (between PCE nodes) happens over TLS, and some intra-cluster communication occurs using plaintext protocols. For example, if a REST call needs to be load balanced to the other core node, the REST call is forwarded using HTTP (plaintext). If the other PCE core node is in a different data center, then the REST traffic could potentially could be sent over a insecure (e.g. shared) WAN link. REST calls contain an Authentication header, which has a base64-encoded username:password string. If this plaintext traffic is snooped on the WAN link, then it's possible for the authentication data to be read.
 
 ### ILO-PIPGEN for single-node security
+
+NOTE: On newer versions of software ILO-PIPGEN and ILO-VPNGEN are no longer required as they are handled by the software without the need for further configurations. These processes described in the next two sections are for older software versions. That said, there is no reason why you should not harden a system even further at the kernel if that is desired.
 
 When the Illumio Policy Compute Engine (PCE) is deployed on-premise, there are several connections between PCE components running on different nodes. Illumio recommends restricting connectivity to PCE hosts such that connections to these components cannot be made from external sources.
 
