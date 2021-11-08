@@ -5,14 +5,13 @@
 ```
 Author: John Westerman, Illumio, Inc.
 Serial number for this document is 20211004104532;
-Version 2021.10
-Monday October 04, 2021 10:45
+Version 2021.11
+Monday November 08, 2021 13:25
 
 Things I changed:
 1. Minor updates to a few sections.
-2. Highlighting for easier read
-3. More information on VEN compatibility Matrix
-4. More inform 
+2. Highlighting for easier read.
+3. More information and clarity on setting up VEN compatibility Matrix.
 ```
 
 ## Install base packages
@@ -421,6 +420,8 @@ You will find the VEN Compatibility Matrix on the Illumio support site. Once thi
 sudo -u ilo-pce illumio-pce-ctl ven-software-install --compatibility-matrix [matrix_file_path_and_name]
 ```
 
+NOTE: Make sure you use fully qualified names for the file. For example, if you are in the /tmp directory don't expect this to find this in the local working directory. Either use /temp/matrix_file_path_and_name or ./matrix_file_path_and_name. For whatever reason the tool will not look in to your current working directory for this file so be sure and specify the path.
+
 ## Set up the VEN repository.  
 
 It is recommended that you use the cluster to also be a repository for the VEN software. This section will walk you through that process. You will need to get the VEN bundles you will need from the Illumio Support web site. They will be clearly identified in the VEN download section of the software download area. They will have a .bz2 extenstion.
@@ -443,17 +444,21 @@ For example:
 sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2 --orgs all --default --no-prompt
 ```
 
-to set it as the default, you'd run this:
+to set it as the default after the fact, you'd run this:
 
 ```
 sudo -u ilo-pce illumio-pce-ctl ven-software-release-set-default 19.3.0-6104
 ```
 
-You can also combine the compatibility matrix and VEN software install like this:
+## Installing both the compatibility matrix and VEN bundle in a single install.
+
+Generally, you will be installing both the compatibility matrix and a new VEN bundle at the same time. Using the example file names above, the commands would look  like this:
 
 ```
 sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2 --compatibility-matrix /tmp/illumio-release-compatibility-8.tar.bz2
 ```
+
+NOTE: Keep this in mind; Make sure you use fully qualified names for the file for this process. For example, if you are in the /tmp directory don't expect illumio-pce-ctl to find this in the local working directory (it is not looking for it there). Either use /temp/matrix_file_path_and_name or ./matrix_file_path_and_name. For whatever reason the tool will not look in to your current working directory for this file so be sure and specify the path. In the case above, I have supplied the full file path and file name.
 
 ## PAIRING VENs for LINUX Examples
 
@@ -568,7 +573,7 @@ This command is located in c:/windows/program files/illumio/   (not bin)
 If you get a certificate error you may have to install the certificate bundle. [Find out how to install bundle on Windows with this link](
 http://www.thewindowsclub.com/manage-trusted-root-certificates-windows).
 
-If you want to see the filters Once the VEN is installed on Windows: the "iptables --list -an" eqivalent Windows command is: "**netsh wfp show filters**"
+If you want to see the filters Once the VEN is installed on Windows: the "iptables --list -an" equivalent Windows command is: "**netsh wfp show filters**"
 
 To deactivate a Windows VEN:
 
