@@ -20,6 +20,14 @@ Note: Some of this is used during testing of PCE connectivity and will not be in
 
 There are two ways I do this. The first is "bare minimum software" which will get you up and running in the shortest amount of time. The second is a ton of tools to do onsite troubleshooting for networking and such.
 
+
+Note that all of the tuning parameters below presuppose that your VM or Bare Metal configuration meets the minimum CPU, RAM and Disk requirements outlined in the Capacity planning document that is available on the support portal.
+
+As an example, here's a link to the capacity planning guide for 21.5:
+https://docs.illumio.com/core/21.5/Content/Guides/pce-install-upgrade/preparation/capacity-planning.htm
+
+Note: Failure to comply with minimum requirements will result in non-functioning or non-operable node(s) or cluster.
+
 For bare minimum:
 ```
 yum update -y
@@ -317,7 +325,7 @@ If necessary (it usually isn't) the trusted CA bundle into /etc/ssl/certs/ca-bun
 
 ##  UPDATING CA-trust (if required)
 
-There should be no reason to do this with a valid certificate. This will only be required when there is no CA or the certificate chain can not be validated by the host. Sometimes (COMODO) there are more than 1 (often 2) intermediate certificates in use. You will need to combine the server certificate with all the intermedia and finally the root certificate chain. And do so in order: Server, then all intermediates, then the root certificate in one file.
+There should be no reason to do this with a valid certificate. This will only be required when there is no CA or the certificate chain can not be validated by the host. Sometimes (COMODO) there are more than 1 (often 2) intermediate certificates in use. You will need to combine the server certificate with all the intermediates and finally the root certificate chain. And do so in order: Server, then all intermediates, then the root certificate in one file.
 
 Note: If either the PCE or the VENs do not have access to the CA (that is, the CA is *not* known internally) copy the root and intermediate certificates using any file name to: **/etc/pki/ca-trust/source/anchors/** then run these commands:
 ```
@@ -417,7 +425,7 @@ As part of setting up the VEN Library in the PCE, you must upload the VEN upgrad
 You will find the VEN Compatibility Matrix on the Illumio support site. Once this is obtained, copy to the /tmp directory of one of the PCE core nodes and run the following command:
 
 ```
-sudo -u ilo-pce illumio-pce-ctl ven-software-install --compatibility-matrix [matrix_file_path_and_name]
+sudo -u ilo-pce illumio-pce-ctl compatibility-matrix-install --compatibility-matrix [matrix_file_path_and_name.tar.bz2]
 ```
 
 NOTE: Make sure you use fully qualified names for the file. For example, if you are in the /tmp directory don't expect this to find this in the local working directory. Either use /temp/matrix_file_path_and_name or ./matrix_file_path_and_name. For whatever reason the tool will not look in to your current working directory for this file so be sure and specify the path.
@@ -452,7 +460,7 @@ sudo -u ilo-pce illumio-pce-ctl ven-software-release-set-default 19.3.0-6104
 
 ## Installing both the compatibility matrix and VEN bundle in a single install.
 
-Generally, you will be installing both the compatibility matrix and a new VEN bundle at the same time. Using the example file names above, the commands would look  like this:
+Generally, you will be installing both the compatibility matrix and a new VEN bundle at the same time. Using the example file names above, the commands would look like this:
 
 ```
 sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2 --compatibility-matrix /tmp/illumio-release-compatibility-8.tar.bz2
