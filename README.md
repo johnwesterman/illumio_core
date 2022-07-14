@@ -4,14 +4,19 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20211004104532;
-Version 2021.11
-Monday November 08, 2021 13:25
+Serial number for this document is 20220714163343;
+Version 2022.07
+Thursday July 14, 2022 16:33
 
 Things I changed:
 1. Minor updates to a few sections.
-2. Highlighting for easier read.
-3. More information and clarity on setting up VEN compatibility Matrix.
+2. Highlighting for easier reading/referencing.
+3. Removal of CentOS 6 reference. Time to move on.
+4. Moved certificate setup, checking, validation to it's own markdown file.
+5. Separated commands making copy/paste easier.
+6. Combined commands where it made sense.
+7. Moved pairing, pairing options and hardening the PCE to their own markdown files and linked them in this document.
+8. Worked to shorten the document to net out the most commonly used cases for set, running, upgrading and resetting a PCE environment.
 ```
 
 ## Install base packages
@@ -23,35 +28,36 @@ There are two ways I do this. The first is "bare minimum software" which will ge
 For bare minimum:
 ```
 yum update -y
+```
+```
 yum install -y net-tools bzip2 ntp
+```
 
 for CentOS8:
 All of the above tools come with the minimal image. C8 uses chronyd (not ntp) which also will come installed.
-```
 
 For all the gadgets for testing (optional):
 ```
-yum install -y epel-release
-yum update -y
+yum install -y epel-release; yum update -y
+```
+```
 yum install -y bind-utils openssh-clients telnet syslog-ng traceroute tcpdump ipset postfix logrotate ca-certificates ntp procps-ng util-linux net-tools
 ```
 ## Firewall and SE Linux configuration
 
 Turn off the firewall:
 
-on CentOS 6.x:
-```
-service ntpd start 
-chkconfig ntpd on 
-service iptables stop 
-chkconfig iptables off
-```
-
 on CentOS 7.x:
 ```
 systemctl start ntpd.service
+```
+```
 systemctl enable ntpd.service
+```
+```
 systemctl stop firewalld
+```
+```
 systemctl disable firewalld
 ```
 
@@ -59,14 +65,17 @@ on CentOS 8.x:
 Note: ntp should be installed but now is service chronyd (systemctl status chronyd). You will likely find that it is already running.
 ```
 systemctl stop firewalld
+```
+```
 systemctl disable firewalld
 ```
 
 selinux can be in any mode including enforcing. I prefer it to be in permissive or disabled mode for testing. In production the parameter will be enforcing.
+
 ```
 vi /etc/selinux/config
 ```
-For testing, change from enforcing to disabled.
+For testing, change from **enforcing** to **disabled**. Although you really don't need to do this. I just do it to remove any initial startup slowdown.
 
 ### PCE ONLY: Process and File Limits. Only required if workload count above 100. Skip to Install the PCE RPM step below if this change not needed.
 
@@ -84,10 +93,6 @@ add this to the bottom of this file:
 ```
 Edit nproc file specific to the OS you are using ...
 
-For CentOS 6.x:
-```
-vi /etc/security/limits.d/90-nproc.conf
-```
 For CentOS 7.x:
 ```
 vi /etc/security/limits.d/20-nproc.conf
@@ -126,7 +131,7 @@ vm.overcommit_memory = 1
 
 ## Set the hostname properly
 
-CentOS7: Set the host name:
+CentOS 7+, Set the host name:
 ```
 hostnamectl set-hostname [your-new-hostname]
 ```
@@ -136,6 +141,9 @@ Make sure the /etc/hosts name for this FQDN is the same as /etc/sysconfig/networ
 ### First:
 ```
 vi /etc/sysconfig/network
+```
+File contents:
+```
 NETWORKING=yes
 HOSTNAME=[your-new-hostname]
 ```
@@ -143,6 +151,9 @@ HOSTNAME=[your-new-hostname]
 ### Second:
 ```
 vi /etc/hosts
+```
+File contents:
+```
 x.x.x.x	xxx
 vi /etc/resolv.conf
 nameserver x.x.x.x
@@ -150,9 +161,11 @@ nameserver x.x.x.x
 
 ## Install the PCE and UI software via RPM:
 
-(installing bzip2 is required if you are using CentOS 7.x)
+(installing bzip2 is required if you are using CentOS < 8.x)
 ```
-yum -y install bzip2  
+yum -y install bzip2
+```
+```
 rpm -ivh <illumio_pce_core.rpm> illumio_pce_core_ui.rpm>
 ```
 note: If you upgrading your environment, see my upgrade notes towards the end of this file.
@@ -174,14 +187,46 @@ Then put these in the alias list using this command:
 source ./pcealiases
 ```
 
+On my own PCE I prefer to have these aliases in my login script. I will modify .bash_profile and add these aliases to the bottom of that file so when I login next time I don't have to use the 'source' command to pull them in my environment.
+
+The other thing I do on my PCE installations is add '.' to my path. This keeps me from having to put './' in front of all the commands I just want to run from the command line without all the fuss.
+
+All combined my .bash_profile will look like this:
+
+```
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+	. ~/.bashrc
+fi
+
+# User specific environment and startup programs
+
+PATH=$PATH:$HOME/bin:.
+
+export PATH
+
+alias ctl='sudo -u ilo-pce /opt/illumio-pce/illumio-pce-ctl'
+alias ctldb='sudo -u ilo-pce /opt/illumio-pce/illumio-pce-db-management'
+alias ctlenv='sudo -u ilo-pce /opt/illumio-pce/illumio-pce-env'
+alias ll='ls -al'
+```
+
 NOTE: To make this permanent edit ~/.bash_profile and put the above commands there so they will be there every time you log in.
 
 In order to apply the new hostname, a system reboot is required, issue **one** of the following commands in order to reboot a CentOS 7 machine.
 
 ```
-1: init 6
-2: systemctl reboot
-3: shutdown -r now
+init 6
+```
+-or-
+```
+systemctl reboot
+```
+-or-
+```
+shutdown -r now
 ```
 
 ## Certificate installation(s)
@@ -197,7 +242,7 @@ NOTE: Once you have a private key and certificate bundle the same will be used o
 
 ## Setting up the PCE environment
 
-AS ROOT user:
+**AS ROOT** user:
 ```
 /opt/illumio-pce/illumio-pce-env setup --generate-cert
 ```
@@ -205,7 +250,7 @@ AS ROOT user:
 ```
 /opt/illumio-pce/illumio-pce-env setup
 ```
-And check the environment:
+And check the environment after the setup is complete:
 ```
 ctlenv check
 ```
@@ -219,141 +264,9 @@ The **--generate-cert** option generates a self-signed certificate, installs tha
 
 It is possible to use your own self signed certificate. Keep in mind it has to be in a certain format with extended attributes, verified and installed by hand. It's possible but I am not going to cover that topic here.
 
-NOTE: The server certificate is going to be a combination of the server certificate, the certificate chain including all intermediate certificates and the root certificate, in that order. If the certificate file does not have all of these certificates contained with it you will want to used an editor and make it so. Use the following commands to validate the certificate file.
+**NOTE**: The server certificate is going to be a combination of the server certificate, the certificate chain including all intermediate certificates and the root certificate, in that order. If the certificate file does not have all of these certificates contained with it you will want to used an editor and make it so. Use the following commands to validate the certificate file.
 
-## Creating the certificates
-
-Certificates are used for 3 major components in the PCE software installation that use TLS:
-- Web Service – Used to secure access to the PCE web console, as well as that provided by the Illumio ASP REST API.
-- Event Service – Provides continuous, secure connectivity from the PCE to the VENs under management and provides a notification capability so that VENs can be instructed to update policy on the host Workloads.
-- Service Discovery – Used for cluster management between PCE node members in the cluster and allows real time alerting on service availability and status.
-
-When building your certificate it will be important to remember these key attributes included with the certificate:
-
-- TLS Web Server Authentication Extended Key Usage
-- TLS Web Client Authentication Extended Key Usage
-- Subject Alternative Names (SAN) are included for the PCE cluster VIP name (load balancer FQDN) and core node names. You do not need to include the data nodes or any IP addresses in the SAN field of the certificate.
-
-A common certificate will be used for all these functions but it is important that all the right options are present in the certificate to allow for secure communication of the software.
-
-## Validating the Certificate.
-
-Your certificate file should be in PEM format. If you look at the file, it will be text with "_BEGIN CERTIFICATE_" and _"END CERTIFICATE"_ in the text. Cat the certificate and make sure it's not encrypted.
-
-Check the certificate to be valid:
-```
-openssl x509 -text -noout -in <certificate_name>
-```
-And another check that is displayed a little easier to read is to ask the PCE about the certificate. The following command will look at all of the certificates in the certificate chain and display information for each of them. If there is a problem with the certificate chain it will show up in this data.
-
-```
-ctlenv setup -ql --test 5
-
--or-
-
- /opt/illumio-pce/illumio-pce-env setup --test 5 --list
-```
-
-NOTE: You should see the full chain here. You also want the following extended attributes:
-```
-X509v3 Extended Key Usage:
-TLS Web Server Authentication, TLS Web Client Authentication
-```
-*If you do not have TLS web and client you will need to generate a new certificate that include these attributes.*
-
-Check to insure that the Private Key and the Certificate are related:
-```
-openssl rsa -modulus -noout -in server.key | openssl md5
-openssl x509 -modulus -noout -in server.crt | openssl md5
-```
-
-NOTE: For the evaluation certificates, the file names I am working with are:
-```
-star_poc_segmentationpov_com.pem - Server private key
-star_poc_segmentationpov_com_bundle.crt - Certificate bundle
-```
-
-And other commands to check certificates that are helpful:
-
-```
-openssl x509 -issuer -noout -in certificate_name.crt
-openssl x509 -subject -noout -in certificate_name.crt
-
-and you can combine these:
-
-openssl x509 -subject -issuer -noout -in certificate_name.crt
-```
-
-These can help in identifying certificates, validating order, etc.
-
-## Preparing the certificate and key files to be used
-
-The Illumio PCE installer program installs the certificate and private keys as follows:
-
-The private key is at /var/lib/illumio-pce/cert/server.key. Make sure it has the following file attributes:
-```
-chmod 400 server.key
-chown ilo-pce:ilo-pce server.key
-```
-
-The server certificate bundle is at */var/lib/illumio-pce/cert/server.crt*
-
-NOTE: this is a bundle file with full chain of trust in PEM format that will include all root and intermediate certificates in this order:
-
-1. PCE certificate
-2. Intermediate certificate(s) in order of trust
-3. Root certificate
-
-Make sure the certificate file has the proper permissions:
-```
-chmod 440 server.crt
-chown ilo-pce:ilo-pce server.crt
-```
-
-If necessary (it usually isn't) the trusted CA bundle into /etc/ssl/certs/ca-bundle.crt
-- this is not important and no need to copy anything here using the illumioeval certificates
-- the full chain of trust is established in the server certificate with CA bundle above
-- the CA will be known to the PCE/VEN because the ca-certificates package has been installed and COCOMO is defined.
-
-##  UPDATING CA-trust (if required)
-
-There should be no reason to do this with a valid certificate. This will only be required when there is no CA or the certificate chain can not be validated by the host. Sometimes (COMODO) there are more than 1 (often 2) intermediate certificates in use. You will need to combine the server certificate with all the intermedia and finally the root certificate chain. And do so in order: Server, then all intermediates, then the root certificate in one file.
-
-Note: If either the PCE or the VENs do not have access to the CA (that is, the CA is *not* known internally) copy the root and intermediate certificates using any file name to: **/etc/pki/ca-trust/source/anchors/** then run these commands:
-```
-update-ca-trust force-enable
-update-ca-trust extract
-update-ca-trust check
-```
-
-To do the same for Ubuntu:
-
-Go to /usr/local/share/ca-certificates/
-Create a new folder, i.e. "sudo mkdir <any_folder_name>"
-Copy the .crt file into the "any_folder_name" folder
-Make sure the permissions are OK (755 for the folder, 644 for the file)
-Finally, run "sudo update-ca-certificates"
-
-## A note on setting up an Multi-Node Cluster (MNC)
-
-**If you are not setting up an MNC you can safely skip this section.**
-
-In most cases this document is used to set up a quick testing environment for functional testing using a single node (SNC). Normally a SNC is not used in production. Occasionally there is a need to set up a multi-node cluster (MNC) in a test environment. Here are some of my thoughts with that process.
-
-Typically the setup will be run ("illumio-pce-env setup") on one core node only. That will generate a runtime yaml file and put it in the /etc/illumio-pce/runtime_env.yml file. This file will be a template in for all of the nodes constituting the MNC. In that file there are things that need to be consistent in the cluster:
-
-* The certificate used in this process is the certificate used on all of the nodes. There will be only one certificate and one private key for all nodes. The certificate and private key are the same for all nodes. The point is once you have generated a proper certificate above you have what you need for the cluster nodes.
-* The runtime_env.yml file will be mostly the same between all the nodes. The only thing that will likely be different is the **"node_type:"** directive. For the cores it is "core" and for the data nodes it's "data1" and "data2" in a 4 node cluster.
-* The **"pce_fqdn:"** directive should never be a core node FQDN. It should always be a separate name which is usually the FQDN of the load balancer VIP IP for the PCE cluster.
-* The **"service_discovery_fqdn:"** directive should all be the same. Usually we recommend point to the core0 FQDN or IP address.
-
-So how to go about doing this.
-
-* Run the setup on core0.
-* Copy the **/etc/illumio-pce/runtime_env.yml** to each of the other nodes **/etc/illumio-pce/runtime_env**.
-* Make relevant changes as indicated above to each of the other nodes changing their "node_type" to reflect the function of the node.
-
-Once you have completed the work above you can continue to start and run the PCE MNC just like you would for an SNC. These steps follow.
+For more information on **setting up, validating and testing certificates** [reference this document](CERTIFICATE.md).
 
 ## <a name=pce-start>Start and run the PCE</a>
 
@@ -362,8 +275,7 @@ Once you have completed the work above you can continue to start and run the PCE
 Start the PCE Software (on each node if running an MNC):
 
 ```
-ctl start --runlevel 1
-ctl status -svw
+ctl start --runlevel 1; ctl status -svw
 ```
 
 NOTE: if PCE doesn't have running status in a minute or two go back and check your work
@@ -381,8 +293,16 @@ NOTE: Do the following ON THE DATABASE MASTER NODE determined FROM ABOVE
 
 ```
 ctldb setup
-ctl set-runlevel 5 (this will set the runlevel on all nodes)
+```
+ ... to set up the database.
+```
+ctl set-runlevel 5
+```
+... set the runlevel on all nodes.
+```
 ctl status -svw
+```
+```
 ctl cluster-status
 ```
 
@@ -399,14 +319,11 @@ should get you in to the landing page.
 **NOTE: Do the following on SNC0 (CORE0 node in a multi-node cluster)**
 
 ```
-ctldb create-domain --user-name user@your_domain.com --full-name 'Demo User' --org-name 'Illumio'
+ctldb create-domain --user-name demo@illumio.com --full-name 'Demo User' --org-name 'Illumio'
 ```
+**NOTE** Use your own user-name, full-name and org-name. The above is simply a template of the command to be used.
 
-You are done.
-
-Now, log into the system and start pairing.
-
-The PCE is up and running at this point. You should have a clean, freshly installed system ready to pair workloads.
+At this point, you are done setting up the core system. The PCE should be up and running. You should have a clean, freshly installed system ready to pair workloads. You can log into the system and start pairing workloads now.
 
 ## VEN Compatibility Matrix
 
@@ -428,20 +345,22 @@ It is recommended that you use the cluster to also be a repository for the VEN s
 
 Once you obtain this file copy it to the /tmp directory of the core0 node. The reason for /tmp is because ilo-pce will need access to this file and will not have the proper access unless you put it here. If you put it somewhere else just remember ilo-pce needs to read the file so permissions will need to be set. /tmp is the easiest path to success.
 
-I am assuming you install the tar file to the /tmp directory in the examples that follow.
+To do the following make sure you have a VEN bundle file as well as the compatibility matrix file. All are downloadable from the support web site.
+
+I am assuming you install the installation files file to the /tmp directory in the examples that follow.
 
 This command installs the PCE bundle:
 
 ```
-sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-NNNNNNNNN.tar.bz2 --orgs all --default --no-prompt
+sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-NNNNNNNNN.tar.bz2 --compatibility-matrix /tmp/illumio-release-compatibility-YYY.tar.bz2 --orgs all --default --no-prompt
 ```
 
-where NNNNNNNN is the build version downloaded from the web site. And if you desire to be prompted remove the --no-prompt option.
+where NNNNNNNN is the build version downloaded from the web site and YYY is the latest compatability matrix file number. And if you desire to be prompted remove the --no-prompt option.
 
 For example:
 
 ```
-sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2 --orgs all --default --no-prompt
+sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2 --compatibility-matrix /tmp/illumio-release-compatibility-8.tar.bz2 --orgs all --default --no-prompt
 ```
 
 to set it as the default after the fact, you'd run this:
@@ -450,167 +369,10 @@ to set it as the default after the fact, you'd run this:
 sudo -u ilo-pce illumio-pce-ctl ven-software-release-set-default 19.3.0-6104
 ```
 
-## Installing both the compatibility matrix and VEN bundle in a single install.
-
-Generally, you will be installing both the compatibility matrix and a new VEN bundle at the same time. Using the example file names above, the commands would look  like this:
-
-```
-sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2 --compatibility-matrix /tmp/illumio-release-compatibility-8.tar.bz2
-```
-
-NOTE: Keep this in mind; Make sure you use fully qualified names for the file for this process. For example, if you are in the /tmp directory don't expect illumio-pce-ctl to find this in the local working directory (it is not looking for it there). Either use /temp/matrix_file_path_and_name or ./matrix_file_path_and_name. For whatever reason the tool will not look in to your current working directory for this file so be sure and specify the path. In the case above, I have supplied the full file path and file name.
-
-## PAIRING VENs for LINUX Examples
-
-```
-/opt/illumio_ven/illumio-ven-ctl activate \
---management-server https://[management-server]:8443 \
---activation-code [your activation code] \
---mode illuminated
-
-/opt/illumio_ven/illumio-ven-ctl activate \
- --management-server https://[management-server]:8443 \
- --activation-code [your activation code] \
- --mode illuminated
-
-You can use environment variables (CHEF/PUPPET/ANSIBLE):
-VEN_MANAGEMENT_SERVER=[management-server]:8443 \
-VEN_ACTIVATION_CODE=[your activation code] \
-VEN_INSTALL_ACTION=activate \
-rpm -ivh illumio-ven*.rpm
-
-VEN_MANAGEMENT_SERVER=[management-server]:8443 \
-VEN_ACTIVATION_CODE=[your activation code] \
-VEN_INSTALL_ACTION=enforcing \
-/opt/illumio_ven/illumio-ven-ctl
-
-/opt/illumio_ven/illumio-ven-ctl activate \
- --management-server [management-server]:8443 \
- --activation-code [your activation code]\
- --mode enforced
- 
-/opt/illumio_ven/illumio-ven-ctl activate \
- --management-server [management-server]:8443 \
- --activation-code [your activation code]\
- --mode illuminated
-
-VEN_MANAGEMENT_SERVER=[management-server]:8443 VEN_ACTIVATION_CODE=[your activation code] VEN_INSTALL_ACTION=activate rpm -ivh illumio-ven*.rpm
-
-To remove an RPM use the -e option with the software that is installed on the system:
-rpm -e illumio-ven-17.2.0-20170809013111c7.x86_64
-
-Solaris:
-/opt/illumio_ven/illumio-ven-ctl activate --management-server pcecluster.poc.segmentationpov.com:8443 --activation-code [your activation code] --mode illuminated
-```
-
-## UNPAIRING A LINUX VEN
-
-```
-/opt/illumio_ven/illumio-ven-ctl –help
-
-Reveals:
-
-Usage:  {activate|backup|check-env|conncheck|connectivity-test|deactivate|gen-supportreport|prepare|restart|restore|start|status|stop|suspend|unpair|unsuspend|version|workloads}
-
-So what you are going to want to do is this:
-
-/opt/illuimo_ven/Illumio-ven-ctl unpair open
-
-Other options for unpairing are:
-
-/opt/illumio_ven/illumio-ven-ctl unpair --help
-
-usage: /opt/illumio_ven/admin/unpair.sh option
-
-This script will remove this workload from Illumio and
-apply the selected interim firewall policy option.
-
-Note: Interim firewall policy is non-persistent and will only be in effect
-      until the workload restarts.
-
-Options:
-   <no option>    Display this help menu.
-
-   recommended    Remove all firewall rules and apply recommended policy (Allow SSH/22 and ICMP only).
-
-   saved          Remove all applied Illumio rules and policy from the current firewall
-
-   open           Remove all firewall rules and leave all ports open.
-
-The Windows version will be similar in command structure (See below)
-```
-
-## PAIRING VENs for WINDOWS Examples
-
-All of the following is done via Powershell. You need to run Powershell as **ADMINISTRATOR**.
-
-The VEN admin files are stored here: c:/program files/illumio/admin/*
-
-When installing the MSI package use this method so there is a log of the install:
-
-```
-msiexec /i ven-install.msi /qn /l*vx VENInstaller.log
-```
-
-This allows you to run scripts from the command line:
-
-```
-Set-ExecutionPolicy -Scope process remotesigned -Force;
-```
-
-### This is typical for a repo:
-
-```
-Set-ExecutionPolicy -Scope process remotesigned -Force; Start-Sleep -s 3; (New-Object System.Net.WebClient).DownloadFile("[management-server]/17.2-lfIrs0yeKQ8mcOpdnIpLQ5AFzyB/pair.ps1", "$pwd\Pair.ps1"); .\Pair.ps1 -repo-host repo.illum.io -repo-dir 17.2-lfIrs0yeKQ8mcOpdnIpLQ5AFzyB/ -repo-https-port 443 -management-server demo4.illum.io:443 -activation-code  [your activation code]; Set-ExecutionPolicy -Scope process undefined -Force;
-```
-
-This command is located in c:/windows/program files/illumio/   (not bin)
-
-1. Install the MSI package
-2. cd c:\windows\program files\illumio
-3. ./illumio-ven-ctl activate -management-server [management-server]:8443 -activation-code  [your activation code]
-
-If you get a certificate error you may have to install the certificate bundle. [Find out how to install bundle on Windows with this link](
-http://www.thewindowsclub.com/manage-trusted-root-certificates-windows).
-
-If you want to see the filters Once the VEN is installed on Windows: the "iptables --list -an" equivalent Windows command is: "**netsh wfp show filters**"
-
-To deactivate a Windows VEN:
-
-Deactivating a VEN will "unpair" the VEN from the PCE without removing the VEN software from the host. This can be done when unpairing is desired with a subsequent repair with a different pairing profile.
-
-```
-PS C:\Program Files\Illumio> .\illumio-ven-ctl.ps1 deactivate
-```
-
-To "unpair" a windows workload:
-
-"Unpairing" a VEN like we are doing here will perform both an unpair operation as well as full software removal. In the example below it will also remove any rules and put the machine in a completely open state without any firewalling at the kernel.
-
-```
-c:/program files/illumio/admin/unpair.ps1 open
-```
-
-### Options for unpairing
-
-**recommended**: Uninstalls the VEN and temporarily allows only SSH/22 until reboot.
-
-Security implications: If this workload is running a production application, it could break because this workload will no longer allow any connections to it other than SSH on port 22.
-
-**saved**: Uninstalls the VEN and reverts to pre-Illumio policy from when the VEN was first installed. Revert the state of the workload's iptables to the state they were in at the moment before the VEN was installed. The dialog will display the amount of time that has passed since the VEN was installed.
-
-Security implications: Depending on how old the iptables configuration are on the workload, VEN removal could impact the application.
-
-**open**: Uninstalls the VEN and leaves all ports on the workload open.
-
-Security implications: If iptables or Illumio were the only security being used for this workload, the workload will be opened up to anyone and become vulnerable to attack.
+**NOTE:** Keep this in mind; Make sure you use fully qualified names for the file for this process. For example, if you are in the /tmp directory don't expect illumio-pce-ctl to find this in the local working directory (it is not looking for it there). Either use /tmp/file_path_and_name or ./file_path_and_name. For whatever reason the tool will not look in to your current working directory for this file so be sure and specify the path. In the case above, I have supplied the full file path and file name.
 
 ## runtime_env settings and suggested settings
-NOTE: I strongly recommend you consider adding the following to the runtime_env.yml file.
-Especially the internal_service_ip option. If you do no bind to an IP address and let the
-PCE decide for itself things can get weird if you have multiple IP addresses or non RFC1918
-addresses in use. If you do not specify an IP address and there are multiple addresses in
-use the PCE will use the highest numbered interface. Don't let it choose this on it's own.
+NOTE: I strongly recommend you consider adding the following to the runtime_env.yml file. Especially the internal_service_ip option. If you do not bind to an IP address and let the PCE decide for itself things can get weird if you have multiple IP addresses or non RFC1918 addresses in use. If you do not specify an IP address and there are multiple addresses in use the PCE will use the highest numbered interface. So if you don't want to deal with crazy, don't let the PCE choose this on it's own.
 
 ```
 #
@@ -627,6 +389,7 @@ expose_user_invitation_link: true
 export_flow_summaries_to_syslog:
 - blocked
 - potentially_blocked
+- unknown
 #- accepted
 ```
 
@@ -639,11 +402,25 @@ Note: new in 19.3+ the PCE base and UI software are separate packages. Keep in m
 for the PCE base software:
 ```
 ctl status
+```
+```
 ctldb dump --file /tmp/<serial_number>_pce_database
+```
+```
 cp /etc/illumio-pce/runtime_env.yml /tmp/<serial_number>_runtime_env.yml
+```
+```
 ctl stop
-rpm -Uvh illumio-pce-19.3.0-16584.x86_64.rpm [<substitute_illumio_pce_UI_install_filename_here.rpm>]
+```
+... upgrade both the core and UI software:
+```
+rpm -Uvh illumio-pce-xx.x.x-xxxxx.x86_64.rpm illumio-pce-ui-xx.x.x.UIx-x.x86_64.rpm
+```
+... Check to make sure things are still ok:
+```
 ctlenv check
+```
+```
 ctl start --runlevel 1;ctl status -svw
 ```
 -- wait for the nodes to come up in run level 1 state
@@ -654,128 +431,43 @@ ctldb show-primary
 Do the following on the master database node only:
 ```
 ctldb migrate
+```
+```
 ctl set-runlevel 5; ctl status -svw
 ```
 Once the nodes are all running in run level 5 the PCE will be accessible.
 
-Upgrading the PCE UI software:
-```
-rpm -Uvh <substitute_illumio_pce_UI_install_filename_here.rpm>
-```
-
 ## Preparing the PCE environment for production (hardening)
 
-### SUMMARY
-
-Note: This document is intended for technical users who will be implementing the solution described below. This document is not intended for non-technical audiences. Refer to the Illumio Security Alert: Insecure Network Transmission (KB article 2894) which is intended for Security professional and non-technical audience. See the Frequently Asked Questions section below for more information.
-
-Supported PCE Versions: 17.1.x, 18.2.x, and later
-
-### INTRODUCTION
-When the Illumio Policy Compute Engine (PCE) is deployed in a multi-node cluster, there are several connections between PCE components running on different nodes.
-
-Within the cluster, connections may be encrypted or plaintext. Some plaintext connections can contain user and system credentials and other sensitive data. Depending on the customer network configuration, this data may be interceptable on the wire using packet sniffers, network taps, or similar tools. This risk exists in PCE multi-node cluster deployments. Splitting the cluster’s nodes across data centers or WAN links may increase this risk, especially if the WAN links are accessible by third parties.
-
-This risk applies only to connections between nodes in one PCE cluster. The following are NOT impacted:
-
-1. Connections to the PCE by the Virtual Enforcement Node (VEN) or web console. These always use TLS.
-1. Connections between PCE clusters in a supercluster configuration. These always use TLS.
-1. Single-node cluster (SNC) deployments, which do not make any outbound connections.
-1. Customers using Illumio’s SaaS Cloud Edition PCE. This applies only to on-premise customer deployments.
-
-Technically speaking, on the IIlumio PCE cluster, REST API over HTTPS calls are received by a PCE core node. The HTTPS (TLS/SSL) portion is terminated on the core node. Subsequently, some intra-cluster communication (between PCE nodes) happens over TLS, and some intra-cluster communication occurs using plaintext protocols. For example, if a REST call needs to be load balanced to the other core node, the REST call is forwarded using HTTP (plaintext). If the other PCE core node is in a different data center, then the REST traffic could potentially could be sent over a insecure (e.g. shared) WAN link. REST calls contain an Authentication header, which has a base64-encoded username:password string. If this plaintext traffic is snooped on the WAN link, then it's possible for the authentication data to be read.
-
-### ILO-PIPGEN for single-node security
-
-NOTE: On newer versions of software ILO-PIPGEN and ILO-VPNGEN are no longer required as they are handled by the software without the need for further configurations. These processes described in the next two sections are for older software versions. That said, there is no reason why you should not harden a system even further at the kernel if that is desired.
-
-When the Illumio Policy Compute Engine (PCE) is deployed on-premise, there are several connections between PCE components running on different nodes. Illumio recommends restricting connectivity to PCE hosts such that connections to these components cannot be made from external sources.
-
-All PCE components listen for connections on TCP and UDP ports in stable, documented ranges. Illumio requires that all PCE nodes be allowed to communicate freely with each other but recommends that no other inbound connections be accepted to ports in these ranges.
-
-Illumio ASP protects critical assets using microsegmentation, and this control can be provided to all other applications using the Virtual Enforcement Node (VEN). However, running the VEN on the hosts running Illumio’s PCE is not supported at this time for operational reasons.
-
-Illumio has provided a utility to help customers configure iptables on each PCE host in such a way that PCE components are protected but other services are unaffected. This utility, called ilo-pipgen (attached below), can be used with new or existing PCE deployments. With this solution, inbound connections to PCE components are permitted only from other PCE hosts and not from any other sources.
-
-To obtain and use instructions for ilo-pipgen [go here](https://support.illumio.com/knowledge-base/articles/Configuring-iptables-on-PCE-hosts-with-ilo-pipgen.html). It can also be obtained from Illumio Support, an Illumio SE or Illumio PS team members.
-
-Here is an example of a script that I generated with a DROP policy (vs ALLOW) that will only allow the outside world to communicate inbound on 22/8443/8444 TCP. And I would remove 22 TCP in a production environment or be more strict with its usage like changing the source network. You can use this script by changing the IP address used to be your own SNC server address.
-
-```
-#
-# Generated by ./ilo-pipgen on pce.illumio.test
-# Tue Apr 20 10:01:16 EDT 2021
-#
-# Modified April 30, 2021 10:53 by John Westerman to
-#   change input policy form ALLOW to DROP and add SSH
-#   to the input policy for ACCEPT. All else is DROPPED.
-# 
-
-*raw
-
-:PREROUTING ACCEPT
-:OUTPUT     ACCEPT
-
--A PREROUTING -i lo -j NOTRACK
--A OUTPUT     -o lo -j NOTRACK
-
-COMMIT
-
-*filter
-
-:INPUT   DROP
-:FORWARD DROP
-:OUTPUT  ACCEPT
-
--A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
--A INPUT -p icmp -j ACCEPT
--A INPUT -i lo -j ACCEPT
-
-# Allow public ports
-
--A INPUT -p tcp -m multiport --dports 8443,8444 -m conntrack --ctstate NEW -j ACCEPT
-
-# Allow from 10.8.1.1
-
--A INPUT -p tcp -s 10.8.1.1 --dport 3100:3600 -m conntrack --ctstate NEW -j ACCEPT
--A INPUT -p tcp -s 10.8.1.1 --dport 5100:6300 -m conntrack --ctstate NEW -j ACCEPT
--A INPUT -p tcp -s 10.8.1.1 --dport 8000:8400 -m conntrack --ctstate NEW -j ACCEPT
--A INPUT -p udp -s 10.8.1.1 --dport 8000:8400 -m conntrack --ctstate NEW -j ACCEPT
--A INPUT -p tcp -s 10.8.1.1 --dport 11200:11300 -m conntrack --ctstate NEW -j ACCEPT
--A INPUT -p tcp -s 10.8.1.1 --dport 24200:25300 -m conntrack --ctstate NEW -j ACCEPT
-
-# Block all other traffic to Illumio ports
-
--A INPUT -p tcp --dport 3100:3600 -j DROP
--A INPUT -p tcp --dport 5100:6300 -j DROP
--A INPUT -p tcp --dport 8000:8400 -j DROP
--A INPUT -p udp --dport 8000:8400 -j DROP
--A INPUT -p tcp --dport 11200:11300 -j DROP
--A INPUT -p tcp --dport 24200:25300 -j DROP
-
-# Insert custom rules here if desired:
-
--A INPUT -p tcp -m multiport --dports 22 -m conntrack --ctstate NEW -j ACCEPT
-
-# Done
-
-COMMIT
-
-```
-
-### ILO-VPNGEN for multi-node security
-
-The file ilo-vpngen.sh can be obtained from Illumio Support, an Illumio SE or Illumio PS team member. Also reference the official web site above for all of the details. [Illumio Support for ilo-vpngen.](https://support.illumio.com/knowledge-base/articles/Enabling-encryption-with-ilo-vpngen.html)
+[See this document](HARDENING.md) for more information on how to harden a system to be put in the wild.
 
 ## Reseting an environment
 
-While rare it has been known that a false start or mis-configuration will cause a system to need to be reset. This command should be used with caution as it will reset the persistent data store and other critical data in the system. If you are using a MNC this will need to be done on every node that is in a cluster.
+While rare it has been known that a false start or mis-configuration will cause a system to need to be reset. Or maybe you just want to start over after a lengthy POC. This command should be used with caution as it will reset the persistent data store and other critical data in the system. If you are using a MNC this will need to be done on every data node that is in a cluster.
 
 The command is very destructive to a running system. This is essentially starting over. All of the database contents will be irreversably deleted. [You should have a backup](#backups) of your data before doing this if that is desired.
+
+Set the system(s) in run level 1. If you try to do this in runlevel 5 on an MNC the system will failover and you will never be successful resetting the devices. You need to be in runlevel 1 so failover will not occur.
+```
+ctl start --runlevel 1
+```
+**On each DATA node** in the system do the following:
 
 ```
 sudo -u ilo-pce /opt/illumio-pce/illumio-pce-ctl reset
 ```
+-or if you are using aliases:
+```
+ctl reset
+```
+**NOTE:** On an MNC you will need to run this command on **each** of the DATA nodes.
+
+Once you have reset each DATA node go back into run level 5 and check the status before moving forward.
+
+```
+ctl set-runlevel 5; ctl status -svw
+```
+
 Once you do a reset you will need to start the PCE. Reference the section titled ["Start and run the PCE"](#pce-start) and "Initialize the PCE Software" above. Once the PCE is in runlevel 1 you will need to recreate the database and set up the org as mentioned above.  
 
 If you have installed a VEN repo you do not have to recreate that step in the reset process.
