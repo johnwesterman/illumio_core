@@ -41,7 +41,7 @@ For all the gadgets for testing (optional):
 yum install -y epel-release; yum update -y
 ```
 ```
-yum install -y bind-utils openssh-clients telnet syslog-ng traceroute tcpdump ipset postfix logrotate ca-certificates ntp procps-ng util-linux net-tools
+yum install -y bind-utils openssh-clients patch syslog-ng traceroute tcpdump ipset postfix logrotate ca-certificates ntp procps-ng util-linux net-tools
 ```
 ## Firewall and SE Linux configuration
 
