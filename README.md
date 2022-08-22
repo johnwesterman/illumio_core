@@ -4,19 +4,13 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20220714163343;
-Version 2022.07
-Thursday July 14, 2022 16:33
+Serial number for this document is 20220822150344;
+Version 2022.08
+Monday August 22, 2022 15:03
 
-Things I changed:
+Changed:
 1. Minor updates to a few sections.
-2. Highlighting for easier reading/referencing.
-3. Removal of CentOS 6 reference. Time to move on.
-4. Moved certificate setup, checking, validation to it's own markdown file.
-5. Separated commands making copy/paste easier.
-6. Combined commands where it made sense.
-7. Moved pairing, pairing options and hardening the PCE to their own markdown files and linked them in this document.
-8. Worked to shorten the document to net out the most commonly used cases for set, running, upgrading and resetting a PCE environment.
+2. Moved process limits details to it's own section since not often done in small POCs.
 ```
 
 ## Install base packages
@@ -75,59 +69,12 @@ selinux can be in any mode including enforcing. I prefer it to be in permissive 
 ```
 vi /etc/selinux/config
 ```
-For testing, change from **enforcing** to **disabled**. Although you really don't need to do this. I just do it to remove any initial startup slowdown.
+For testing, change from **enforcing** to **disabled**. Although you really don't need to do this. This is done to remove any initial problems. This can all be undone later.
 
-### PCE ONLY: Process and File Limits. Only required if workload count above 100. Skip to Install the PCE RPM step below if this change not needed.
+###File and Process Limits
+#####For PCE ONLY: Process and File Limits. Only required if workload count above 100. Skip to Install the PCE RPM step below if this change not needed. If you need to change these reference this file.
 
-```
-vi /etc/security/limits.conf
-```
-add this to the bottom of this file:
-```
-* soft core unlimited
-* hard core unlimited
-* hard nproc 65535
-* soft nproc 65535
-* hard nofile 65535
-* soft nofile 65535
-```
-Edit nproc file specific to the OS you are using ...
-
-For CentOS 7.x:
-```
-vi /etc/security/limits.d/20-nproc.conf
-```
-... and add the following (clean up any duplication):
-
-```
-* hard nproc 65535
-* soft nproc 65535
-```
-
-For PCE version 18.x and above:
-```
-vi /etc/sysctl.conf
-```
-
-core nodes:
-```
-fs.file-max        = 2000000
-net.core.somaxconn = 16384
-```
-
-data nodes:
-```
-fs.file-max          = 2000000
-kernel.shmmax        = 60000000
-vm.overcommit_memory = 1
-```
-snc0 nodes:
-```
-fs.file-max          = 2000000
-net.core.somaxconn   = 16384
-kernel.shmmax        = 60000000
-vm.overcommit_memory = 1
-```
+If you need to change the file and process limits [reference this document](PROCESSLIMITS.md).
 
 ## Set the hostname properly
 
@@ -347,7 +294,7 @@ Once you obtain this file copy it to the /tmp directory of the core0 node. The r
 
 To do the following make sure you have a VEN bundle file as well as the compatibility matrix file. All are downloadable from the support web site.
 
-I am assuming you install the installation files file to the /tmp directory in the examples that follow.
+Copy the installation files to the /tmp directory in the examples that follow. Any user can pull from /tmp. It is important because the ILO user is used for this.
 
 This command installs the PCE bundle:
 
@@ -363,13 +310,7 @@ For example:
 sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2 --compatibility-matrix /tmp/illumio-release-compatibility-8.tar.bz2 --orgs all --default --no-prompt
 ```
 
-to set it as the default after the fact, you'd run this:
-
-```
-sudo -u ilo-pce illumio-pce-ctl ven-software-release-set-default 19.3.0-6104
-```
-
-**NOTE:** Keep this in mind; Make sure you use fully qualified names for the file for this process. For example, if you are in the /tmp directory don't expect illumio-pce-ctl to find this in the local working directory (it is not looking for it there). Either use /tmp/file_path_and_name or ./file_path_and_name. For whatever reason the tool will not look in to your current working directory for this file so be sure and specify the path. In the case above, I have supplied the full file path and file name.
+**NOTE:** Keep this in mind; Make sure you use fully qualified names for the file for this process. For example, if you are in the /tmp directory don't expect illumio-pce-ctl to find this in the local working directory (it is not looking for it there). Either use /tmp/file_path_and_name or ./file_path_and_name. For whatever reason the tool will not look in to your current working directory for this file so be sure and specify the path. In the case above, I have supplied the full file path and file name. ilo-pce will also need at least read capability for these files since the command is done in it's name.
 
 ## runtime_env settings and suggested settings
 NOTE: I strongly recommend you consider adding the following to the runtime_env.yml file. Especially the internal_service_ip option. If you do not bind to an IP address and let the PCE decide for itself things can get weird if you have multiple IP addresses or non RFC1918 addresses in use. If you do not specify an IP address and there are multiple addresses in use the PCE will use the highest numbered interface. So if you don't want to deal with crazy, don't let the PCE choose this on it's own.
