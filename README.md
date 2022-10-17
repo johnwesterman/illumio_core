@@ -4,13 +4,15 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20220822150344;
-Version 2022.08
-Monday August 22, 2022 15:03
+Serial number for this document is 20221017002709;
+Version 2022.10
+Monday October 17, 2022 00:25
 
 Changed:
-1. Minor updates to a few sections.
-2. Moved process limits details to it's own section since not often done in small POCs.
+1. Updates to backup/restore process.
+1. Added thoughts on considerations when IP address(es) must be changed.
+1. Minor typographical corrections.
+1. Starting to add notes specific to installing PCE on Rocky Linux. It is pretty much the old CentOS but I'll call out differences when I see them.
 ```
 
 ## Install base packages
@@ -27,7 +29,7 @@ yum update -y
 yum install -y net-tools bzip2 ntp
 ```
 
-for CentOS8:
+for CentOS/Rocky 8:
 All of the above tools come with the minimal image. C8 uses chronyd (not ntp) which also will come installed.
 
 For all the gadgets for testing (optional):
@@ -41,7 +43,7 @@ yum install -y bind-utils openssh-clients patch syslog-ng traceroute tcpdump ips
 
 Turn off the firewall:
 
-on CentOS 7.x:
+on CentOS/Rocky 7.x:
 ```
 systemctl start ntpd.service
 ```
@@ -55,7 +57,7 @@ systemctl stop firewalld
 systemctl disable firewalld
 ```
 
-on CentOS 8.x:
+on CentOS/Rocky 8.x:
 Note: ntp should be installed but now is service chronyd (systemctl status chronyd). You will likely find that it is already running.
 ```
 systemctl stop firewalld
@@ -78,14 +80,14 @@ If you need to change the file and process limits [reference this document](PROC
 
 ## Set the hostname properly
 
-CentOS 7+, Set the host name:
+CentOS 7+/Rocky, Set the host name:
 ```
 hostnamectl set-hostname [your-new-hostname]
 ```
 
 Make sure the /etc/hosts name for this FQDN is the same as /etc/sysconfig/network host name.
 
-### First:
+### First (generally unnecessary these days):
 ```
 vi /etc/sysconfig/network
 ```
@@ -108,7 +110,7 @@ nameserver x.x.x.x
 
 ## Install the PCE and UI software via RPM:
 
-(installing bzip2 is required if you are using CentOS < 8.x)
+(installing bzip2 is required if you are using CentOS < 8.x or Rocky Linux)
 ```
 yum -y install bzip2
 ```
@@ -162,7 +164,7 @@ alias ll='ls -al'
 
 NOTE: To make this permanent edit ~/.bash_profile and put the above commands there so they will be there every time you log in.
 
-In order to apply the new hostname, a system reboot is required, issue **one** of the following commands in order to reboot a CentOS 7 machine.
+If you have made a ton of software updates, especially a kernel update or to apply the new hostname and the like, a system reboot might be required, issue **one** of the following commands in order to reboot a Linux machine.
 
 ```
 init 6
@@ -442,7 +444,49 @@ I'll explain the resizedisk1.sh and resizedisk2.sh scripts at a later date.
 
 ## <a name=backups>Backing up the database </a>
 
-You can find more information on backing up the data in a PCE by going to [Illumio Documenation](https://docs.illumio.com/). When I create an SNC that I am going to use for a while I'll make sure I have regular backups. I do this with cron. If you do this in production it may look a little different. The important thing about the back up is to make it first but then to get it off the box so if anything happens your backup easily recovered and can be used to re-instantiate a system.
+You can find more information on backing up the data in a PCE by going to [Illumio Documentation](https://docs.illumio.com/). When I create an SNC that I am going to use for a while I'll make sure I have regular backups. Even if you have an MNC you should do backups and make sure the backup is off the systems and put in a safe place. **Also remember no crazy stuff here. If you backup the database on one set of IP addressess you can't restore it to another. The restore will fail. Changing the IP address of an SNC or MNC takes planning. You are best to reach out to your SE or PS team mate to help with this.** This example is how to backup an SNC0 and then restore that database to the same IP address as it was pulled from.
+
+### Backing up the database
+
+An example of backing up the database will look like this. You will want to be in full running status to take the backup (run level 5). I will get backups of both the database as well as the runtime file like this:
+```
+ctldb dump --file /tmp/<serial_number>_pce_database
+```
+```
+cp /etc/illumio-pce/runtime_env.yml /tmp/<serial_number>_runtime_env.yml
+```
+
+### Restoring the database
+
+In order to restore a database that you backed up in the example above you will essentially reverse the process. You will need to be in run level 1 to do the restore. Once the restore is complete you will need to go back to run level 5.
+
+The three steps to restore are as follows:
+
+```
+ctl start --runlevel 1
+```
+```
+ctldb restore --file /tmp/<serial_number>_pce_database
+```
+```
+ctl set-runlevel 5; ctl status -svw
+```
+
+### Listen-only Mode
+
+Once you do a restore the PCE will be in "listen-only mode" until you turn this mode off. To turn listen-only mode off:
+
+```
+sudo -u ilo-pce /opt/illumio-pce/illumio-pce-ctl listen-only-mode disable
+```
+or, if you have the aliases installed:
+```
+ctl listen-only-mode disable
+```
+
+### Using CRON to automate things
+
+I will automate the backup process with cron. If you do this in production it may look a little different. The important thing about the back up is to make it first but then to get it off the box so if anything happens your backup easily recovered and can be used to re-instantiate a system.
 
 ```
 My crontab looks like this:
@@ -456,3 +500,19 @@ SHELL=/bin/bash
 ```
 
 What the above will do is every morning at 1am a backup will be made and put in a specific directory. It will also make sure there are no more than X copies of the database files; in this case 60 days worth.
+
+## Changing an IP address of a PCE
+
+Warning: You are swimming with sharks here. Be careful. Back up your database now.
+
+The following comments are unsupported guidance to be used as interesting information only.
+
+These are just notes. Things to consider. In the example I am not changing the FQDN, only the IP address. I want to put down things to consider when doing this.
+
+1. It is best that you reach out to your SE, PS or official support contacts to help you with this. Whether an SNC or MNC changing the IP address has some operational conciderations since so much security comes with some trusted IP address(es) and FQDNs.
+1. The guaranteed way after letting the VEN's get the new IP from the PCE runtime is to take a backup of the PCE, reset the PCE and restore the DB.
+1. Update the PCE runtime_env.yml with the new IP and let the VENs soak in the changes before making the PCE side change.
+1. We typically like to make the PCE runtime addition with the new IP and leave the old IP for at least 30 mins to make sure the VENs check in and get the new IP.
+1. If done properly you should not have to "unpair/repair" any VENs.
+1. You could go into "visibility" mode (not using enforcement mode) before making the change. This way the VEN will have no problem physically connecting to the new IP address. In this mode, you will not be blocking any traffic (keep this in mind).
+1. You cannot change the VEN enforcement mode from the VEN side. It must be done from the PCE.
