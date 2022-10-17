@@ -10,9 +10,9 @@ Monday October 17, 2022 00:25
 
 Changed:
 1. Updates to backup/restore process.
-1. Added thoughts on considerations when IP address(es) must be changed.
-1. Minor typographical corrections.
-1. Starting to add notes specific to installing PCE on Rocky Linux. It is pretty much the old CentOS but I'll call out differences when I see them.
+2. Added thoughts on considerations when IP address(es) must be changed.
+3. Minor typographical corrections.
+4. Starting to add notes specific to installing PCE on Rocky Linux. It is pretty much the old CentOS but I'll call out differences when I see them.
 ```
 
 ## Install base packages
