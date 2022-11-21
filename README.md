@@ -4,15 +4,12 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20221017002709;
-Version 2022.10
-Monday October 17, 2022 00:25
+Serial number for this document is 20221121113419;
+Version 2022.11
+Monday November 21, 2022 11:34
 
 Changed:
-1. Updates to backup/restore process.
-2. Added thoughts on considerations when IP address(es) must be changed.
-3. Minor typographical corrections.
-4. Starting to add notes specific to installing PCE on Rocky Linux. It is pretty much the old CentOS but I'll call out differences when I see them.
+1. Remove the "redirection" from all linux commands replacing them with angle brackets.
 ```
 
 ## Install base packages
@@ -115,7 +112,7 @@ nameserver x.x.x.x
 yum -y install bzip2
 ```
 ```
-rpm -ivh <illumio_pce_core.rpm> illumio_pce_core_ui.rpm>
+rpm -ivh [illumio_pce_core.rpm] [illumio_pce_core_ui.rpm]
 ```
 note: If you upgrading your environment, see my upgrade notes towards the end of this file.
 
@@ -258,7 +255,7 @@ ctl cluster-status
 If above everything statuses good open a browser and go to:
 
 ```
-https://<pce_fqdn>:8443/login
+https://[pce_fqdn]:8443/login
 ```
 
 should get you in to the landing page.
@@ -347,10 +344,10 @@ for the PCE base software:
 ctl status
 ```
 ```
-ctldb dump --file /tmp/<serial_number>_pce_database
+ctldb dump --file /tmp/[serial_number]_pce_database
 ```
 ```
-cp /etc/illumio-pce/runtime_env.yml /tmp/<serial_number>_runtime_env.yml
+cp /etc/illumio-pce/runtime_env.yml /tmp/[serial_number]_runtime_env.yml
 ```
 ```
 ctl stop
@@ -450,10 +447,10 @@ You can find more information on backing up the data in a PCE by going to [Illum
 
 An example of backing up the database will look like this. You will want to be in full running status to take the backup (run level 5). I will get backups of both the database as well as the runtime file like this:
 ```
-ctldb dump --file /tmp/<serial_number>_pce_database
+ctldb dump --file /tmp/[serial_number]_pce_database
 ```
 ```
-cp /etc/illumio-pce/runtime_env.yml /tmp/<serial_number>_runtime_env.yml
+cp /etc/illumio-pce/runtime_env.yml /tmp/[serial_number]_runtime_env.yml
 ```
 
 ### Restoring the database
@@ -466,7 +463,7 @@ The three steps to restore are as follows:
 ctl start --runlevel 1
 ```
 ```
-ctldb restore --file /tmp/<serial_number>_pce_database
+ctldb restore --file /tmp/[serial_number]_pce_database
 ```
 ```
 ctl set-runlevel 5; ctl status -svw
