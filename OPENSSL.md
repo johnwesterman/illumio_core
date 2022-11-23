@@ -95,7 +95,7 @@ make install
 ```
 Make sure you observe for any errors. If done properly, there won't be anything other than warnings here.
 
-## Configure it shared libraries.
+## Configure shared libraries
 
 Once we have successfully installed OpenSSL, configure it shared libraries.
 
@@ -169,13 +169,14 @@ openssl version -a
 This should return the 1.1.1 version of openssl. Output will be similar like:
 
 ```
-OpenSSL 1.1.1s 8 Dec 2020
-built on: Sun Jan 10 03:58:36 2021 UTC
+[root@rocky9pce profile.d]# openssl version -a
+OpenSSL 1.1.1s  1 Nov 2022
+built on: Wed Nov 23 16:05:44 2022 UTC
 platform: linux-x86_64
-options: bn(64,64) rc4(16x,int) des(int) idea(int) blowfish(ptr)
-compiler: gcc -fPIC -pthread -m64 -Wa,–noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_CPUID_OBJ -DOPENSSL_IA32_SSE2 -DOPENSSL_BN_ASM_MONT -DOPENSSL_BN_ASM_MONT5 -DOPENSSL_BN_ASM_GF2m -DSHA1_ASM -DSHA256_ASM -DSHA512_ASM -DKECCAK1600_ASM -DRC4_ASM -DMD5_ASM -DAESNI_ASM -DVPAES_ASM -DGHASH_ASM -DECP_NISTZ256_ASM -DX25519_ASM -DPOLY1305_ASM -DZLIB -DNDEBUG
-OPENSSLDIR: “/usr/local/ssl”
-ENGINESDIR: “/usr/local/ssl/lib/engines-1.1”
+options:  bn(64,64) rc4(16x,int) des(int) idea(int) blowfish(ptr)
+compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_CPUID_OBJ -DOPENSSL_IA32_SSE2 -DOPENSSL_BN_ASM_MONT -DOPENSSL_BN_ASM_MONT5 -DOPENSSL_BN_ASM_GF2m -DSHA1_ASM -DSHA256_ASM -DSHA512_ASM -DKECCAK1600_ASM -DRC4_ASM -DMD5_ASM -DAESNI_ASM -DVPAES_ASM -DGHASH_ASM -DECP_NISTZ256_ASM -DX25519_ASM -DPOLY1305_ASM -DZLIB -DNDEBUG
+OPENSSLDIR: "/usr/local/ssl"
+ENGINESDIR: "/usr/local/ssl/lib/engines-1.1"
 Seeding source: os-specific
 ```
 
