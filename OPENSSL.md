@@ -13,17 +13,17 @@ OpenSSL is a robust, commercial-grade, and full-featured toolkit for the Transpo
 
 Always keep the server up to date the security purpose.
 ```
-    dnf update -y
+dnf update -y
 ```
 ## Install development tools
 
 We need to install a development tool and few dependencies to install OpenSSL
 ```
-    # dnf group install ‘Development Tools’
+dnf group install ‘Development Tools’
 ```
 ## Install dependencies
 ```
-    # dnf install perl-core zlib-devel wget bzip2 -y
+dnf install perl-core zlib-devel wget bzip2 -y
 ```
 ## Download OpenSSL 1.1.1s
 
