@@ -10,6 +10,8 @@ Monday November 21, 2022 11:34
 
 Changed:
 1. Remove the "redirection" from all linux commands replacing them with angle brackets.
+2. Removed references to "yum" and replacing with "dnf".
+3. 'dnf install' instead of 'rpm -ivh' for RPM installations so dependencies are resolved if there are any.
 ```
 
 ## Install base packages
@@ -20,27 +22,29 @@ There are two ways I do this. The first is "bare minimum software" which will ge
 
 For bare minimum:
 ```
-yum update -y
+dnf update -y
 ```
 ```
-yum install -y net-tools bzip2 ntp
+dnf install -y net-tools bzip2 ntp
 ```
 
-for CentOS/Rocky 8:
+for CentOS/REHL/Rocky release 8+:
 All of the above tools come with the minimal image. C8 uses chronyd (not ntp) which also will come installed.
 
 For all the gadgets for testing (optional):
 ```
-yum install -y epel-release; yum update -y
+dnf install -y epel-release; dnf update -y
 ```
 ```
-yum install -y bind-utils openssh-clients patch syslog-ng traceroute tcpdump ipset postfix logrotate ca-certificates ntp procps-ng util-linux net-tools
+dnf install -y bind-utils openssh-clients patch traceroute tcpdump ipset postfix logrotate ca-certificates procps-ng util-linux net-tools
 ```
+You will find that the above list of software is already installed. Not a bad idea to make sure though.
+
 ## Firewall and SE Linux configuration
 
 Turn off the firewall:
 
-on CentOS/Rocky 7.x:
+on CentOS/REHL/Rocky 7.x:
 ```
 systemctl start ntpd.service
 ```
@@ -54,7 +58,7 @@ systemctl stop firewalld
 systemctl disable firewalld
 ```
 
-on CentOS/Rocky 8.x:
+on CentOS/REHL/Rocky 8+:
 Note: ntp should be installed but now is service chronyd (systemctl status chronyd). You will likely find that it is already running.
 ```
 systemctl stop firewalld
@@ -77,7 +81,7 @@ If you need to change the file and process limits [reference this document](PROC
 
 ## Set the hostname properly
 
-CentOS 7+/Rocky, Set the host name:
+Set the host name properly:
 ```
 hostnamectl set-hostname [your-new-hostname]
 ```
@@ -107,12 +111,12 @@ nameserver x.x.x.x
 
 ## Install the PCE and UI software via RPM:
 
-(installing bzip2 is required if you are using CentOS < 8.x or Rocky Linux)
+Illumio Core uses bzip2. This will insure it is installed for use.
 ```
-yum -y install bzip2
+dnf -y install bzip2
 ```
 ```
-rpm -ivh [illumio_pce_core.rpm] [illumio_pce_core_ui.rpm]
+dnf install [illumio_pce_core.rpm] [illumio_pce_core_ui.rpm]
 ```
 note: If you upgrading your environment, see my upgrade notes towards the end of this file.
 

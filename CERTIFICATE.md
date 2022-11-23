@@ -98,9 +98,7 @@ There should be no reason to do this with a valid certificate. This will only be
 
 Note: If either the PCE or the VENs do not have access to the CA (that is, the CA is *not* known internally) copy the root and intermediate certificates using any file name to: **/etc/pki/ca-trust/source/anchors/** then run these commands:
 ```
-update-ca-trust force-enable
-update-ca-trust extract
-update-ca-trust check
+update-ca-trust force-enable; update-ca-trust extract; update-ca-trust check
 ```
 
 To do the same for Ubuntu:
