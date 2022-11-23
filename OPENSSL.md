@@ -19,8 +19,10 @@ dnf update -y
 
 We need to install a development tool and few dependencies to install OpenSSL
 ```
-dnf group install ‘Development Tools’
+dnf group install 'Development Tools'
 ```
+This will likely download several hundred packages. Be patient while they download and install.
+
 ## Install dependencies
 ```
 dnf install perl-core zlib-devel wget bzip2 -y
@@ -49,18 +51,38 @@ cd openssl-1.1.1s
 
 ## Configure it with PATH
 ```
-./config –prefix=/usr/local/ssl –openssldir=/usr/local/ssl shared zlib
+./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib
 ```
 
 Output should look something like this:
 
 ```
-Insert text here.
+[root@rocky9pce openssl-1.1.1s]# ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib
+Operating system: x86_64-whatever-linux2
+Configuring OpenSSL version 1.1.1s (0x1010113fL) for linux-x86_64
+Using os-specific seed configuration
+Creating configdata.pm
+Creating Makefile
+
+**********************************************************************
+***                                                                ***
+***   OpenSSL has been successfully configured                     ***
+***                                                                ***
+***   If you encounter a problem while building, please open an    ***
+***   issue on GitHub <https://github.com/openssl/openssl/issues>  ***
+***   and include the output from the following command:           ***
+***                                                                ***
+***       perl configdata.pm --dump                                ***
+***                                                                ***
+***   (If you are new to OpenSSL, you might want to consult the    ***
+***   'Troubleshooting' section in the INSTALL file first)         ***
+***                                                                ***
+**********************************************************************
 ```
 
 ## Install OpenSSL 1.1.1s
 
-Now, build the software:
+Now, build the software:. Keep in mind this is going to compile the code and will take some time. All I can say is get some coffee and be patient. And I don't drink coffee. So all I have is patients.
 
 ```
 make
