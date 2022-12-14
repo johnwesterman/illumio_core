@@ -275,34 +275,22 @@ ctldb create-domain --user-name demo@illumio.com --full-name 'Demo User' --org-n
 
 At this point, you are done setting up the core system. The PCE should be up and running. You should have a clean, freshly installed system ready to pair workloads. You can log into the system and start pairing workloads now.
 
-## VEN Compatibility Matrix
+## Setting up the VEN repository.  
 
-NOTE: The compatibility matrix must be uploaded to the PCE before you upload any VEN software bundles in the next step or you will get an error.
+It is recommended that you use the PCE to be a repository for the VEN software. This section will walk you through that process. You will need to get the VEN bundles you want to use from the Illumio Support web site. They will be clearly identified in the VEN download section of the software download area. They will have a .bz2 extension.
 
-As part of setting up the VEN Library in the PCE, you must upload the VEN upgrade compatibility matrix to the PCE. The compatibility matrix contains information about valid VEN upgrade paths and VEN to PCE version compatibility. To use the PCE web console and the Illumio Core REST API, you must upload this matrix for VEN upgrades to be successful.
+As part of setting up the VEN Library you must also use the VEN upgrade compatibility matrix. The compatibility matrix contains information about valid VEN upgrade paths and VEN to PCE version compatibility. To use the PCE web console and the Illumio Core REST API, you must upload this matrix for VEN upgrades to be successful.
 
-You will find the VEN Compatibility Matrix on the Illumio support site. Once this is obtained, copy to the /tmp directory of one of the PCE core nodes and run the following command:
-
-```
-sudo -u ilo-pce illumio-pce-ctl ven-software-install --compatibility-matrix [matrix_file_path_and_name]
-```
-
-NOTE: Make sure you use fully qualified names for the file. For example, if you are in the /tmp directory don't expect this to find this in the local working directory. Either use /temp/matrix_file_path_and_name or ./matrix_file_path_and_name. For whatever reason the tool will not look in to your current working directory for this file so be sure and specify the path.
-
-## Set up the VEN repository.  
-
-It is recommended that you use the cluster to also be a repository for the VEN software. This section will walk you through that process. You will need to get the VEN bundles you will need from the Illumio Support web site. They will be clearly identified in the VEN download section of the software download area. They will have a .bz2 extenstion.
-
-Once you obtain this file copy it to the /tmp directory of the core0 node. The reason for /tmp is because ilo-pce will need access to this file and will not have the proper access unless you put it here. If you put it somewhere else just remember ilo-pce needs to read the file so permissions will need to be set. /tmp is the easiest path to success.
+Once you obtain these files copy them to the /tmp directory of the core0/snc node. The reason to use the /tmp is ilo-pce will need access to this file and will not have the proper access unless you put it here. If you put it somewhere else just remember ilo-pce needs to read the file so permissions will need to be set. /tmp is the easiest path to success.
 
 To do the following make sure you have a VEN bundle file as well as the compatibility matrix file. All are downloadable from the support web site.
 
-Copy the installation files to the /tmp directory in the examples that follow. Any user can pull from /tmp. It is important because the ILO user is used for this.
+Copy the installation files to the /tmp directory in the examples that follow. Any user can pull from /tmp. It is important because the ilo-pce user is used for this set of commands (not root).
 
-This command installs the PCE bundle:
+This command installs the VEN bundle:
 
 ```
-sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-NNNNNNNNN.tar.bz2 --compatibility-matrix /tmp/illumio-release-compatibility-YYY.tar.bz2 --orgs all --default --no-prompt
+sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/[illumio-ven-bundle-NNNNNNNNN.tar.bz2] --compatibility-matrix /tmp/[illumio-release-compatibility-YYY.tar.bz2] --orgs all --default --no-prompt
 ```
 
 where NNNNNNNN is the build version downloaded from the web site and YYY is the latest compatability matrix file number. And if you desire to be prompted remove the --no-prompt option.
@@ -313,10 +301,10 @@ For example:
 sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2 --compatibility-matrix /tmp/illumio-release-compatibility-8.tar.bz2 --orgs all --default --no-prompt
 ```
 
-**NOTE:** Keep this in mind; Make sure you use fully qualified names for the file for this process. For example, if you are in the /tmp directory don't expect illumio-pce-ctl to find this in the local working directory (it is not looking for it there). Either use /tmp/file_path_and_name or ./file_path_and_name. For whatever reason the tool will not look in to your current working directory for this file so be sure and specify the path. In the case above, I have supplied the full file path and file name. ilo-pce will also need at least read capability for these files since the command is done in it's name.
+**NOTE:** Keep this in mind; Make sure you use fully qualified names for the file for this process. For example, if you are in the /tmp directory don't expect illumio-pce-ctl to find this in the local working directory (it is not looking for it there). For whatever reason the tool will not look in to your current working directory for this file so be sure and specify the path. In the case above, I have supplied the full file path and file name. ilo-pce will also need at least read capability for these files since the command is done using ilo-pce permissions.
 
 ## runtime_env settings and suggested settings
-NOTE: I strongly recommend you consider adding the following to the runtime_env.yml file. Especially the internal_service_ip option. If you do not bind to an IP address and let the PCE decide for itself things can get weird if you have multiple IP addresses or non RFC1918 addresses in use. If you do not specify an IP address and there are multiple addresses in use the PCE will use the highest numbered interface. So if you don't want to deal with crazy, don't let the PCE choose this on it's own.
+While none of the following is required, I recommend you consider adding the following to the runtime_env.yml file. Especially the internal_service_ip option. If you do not bind to an IP address and let the PCE decide for itself things can get weird if you have multiple IP addresses or non RFC1918 addresses in use. If you do not specify an IP address and there are multiple addresses in use in the cluster the PCE will use the highest numbered interface. So if you don't want to deal with crazy, don't let the PCE choose this on it's own.
 
 ```
 #
