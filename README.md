@@ -4,9 +4,9 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20221123105042;
-Version 2022.11
-Monday November 23, 2022 10:50
+Serial number for this document is 20221213202924;
+Version 2022.12
+Tuesday December 13, 2022 20:29
 
 Changed:
 1. Remove the "redirection" from all linux commands replacing them with angle brackets.
