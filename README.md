@@ -10,6 +10,7 @@ Tuesday December 13, 2022 20:29
 
 Changed:
 1. Minor edits related to VEN repo installation.
+2. Updated the automation process and setup script for SNC installation.
 ```
 
 ## Install base packages
