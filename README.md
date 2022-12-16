@@ -9,16 +9,14 @@ Version 2022.12
 Tuesday December 13, 2022 20:29
 
 Changed:
-1. Remove the "redirection" from all linux commands replacing them with angle brackets.
-2. Removed references to "yum" and replacing with "dnf".
-3. 'dnf install' instead of 'rpm -ivh' for RPM installations so dependencies are resolved if there are any.
+1. Minor edits related to VEN repo installation.
 ```
 
 ## Install base packages
 
 Note: Some of this is used during testing of PCE connectivity and will not be installed in production. Almost all of this is optional. You may find you do not need any of it to get your project off the ground.
 
-There are two ways I do this. The first is "bare minimum software" which will get you up and running in the shortest amount of time. The second is a ton of tools to do onsite troubleshooting for networking and such.
+There are two ways I do this. The first is "bare minimum software" which will get you up and running in the shortest amount of time. The second are tools to do onsite troubleshooting for networking and such.
 
 For bare minimum:
 ```
@@ -38,7 +36,7 @@ dnf install -y epel-release; dnf update -y
 ```
 dnf install -y bind-utils openssh-clients patch traceroute tcpdump ipset postfix logrotate ca-certificates procps-ng util-linux net-tools
 ```
-You will find that the above list of software is already installed. Not a bad idea to make sure though.
+You will find that the above list of software is already installed. It is good to make sure though.
 
 ## Firewall and SE Linux configuration
 
@@ -74,8 +72,9 @@ vi /etc/selinux/config
 ```
 For testing, change from **enforcing** to **disabled**. Although you really don't need to do this. This is done to remove any initial problems. This can all be undone later.
 
-###File and Process Limits
-#####For PCE ONLY: Process and File Limits. Only required if workload count above 100. Skip to Install the PCE RPM step below if this change not needed. If you need to change these reference this file.
+### File and Process Limits
+
+##### For PCE ONLY: Process and File Limits. Only required if workload count above 100. Skip to Install the PCE RPM step below if this change not needed. If you need to change these reference this file.
 
 If you need to change the file and process limits [reference this document](PROCESSLIMITS.md).
 
@@ -123,7 +122,7 @@ note: If you upgrading your environment, see my upgrade notes towards the end of
 ## Set up for command aliasing (optional).
 
 The remainder of this document will call these commands this way.
-This step saves a ton of typing in the future.
+This step saves a lot of typing in the future.
 Put the following in a file named "pcealiases" (or your file name of choice)
 
 ```
@@ -137,7 +136,7 @@ Then put these in the alias list using this command:
 source ./pcealiases
 ```
 
-On my own PCE I prefer to have these aliases in my login script. I will modify .bash_profile and add these aliases to the bottom of that file so when I login next time I don't have to use the 'source' command to pull them in my environment.
+I prefer to have these aliases in my login script. I will modify .bash_profile and add these aliases to the bottom of that file so when I login next time I don't have to use the 'source' command to pull them in my environment.
 
 The other thing I do on my PCE installations is add '.' to my path. This keeps me from having to put './' in front of all the commands I just want to run from the command line without all the fuss.
 
@@ -165,7 +164,7 @@ alias ll='ls -al'
 
 NOTE: To make this permanent edit ~/.bash_profile and put the above commands there so they will be there every time you log in.
 
-If you have made a ton of software updates, especially a kernel update or to apply the new hostname and the like, a system reboot might be required, issue **one** of the following commands in order to reboot a Linux machine.
+If you have made many software updates, especially a kernel update or to apply the new hostname and the like, a system reboot might be required, issue **one** of the following commands in order to reboot a Linux machine.
 
 ```
 init 6
@@ -410,26 +409,7 @@ If you are resetting because of an IP address change make sure that the IP addre
 
 ## Automation of an install
 
-There are a number of ways to automate an install. The way I am going to show you is how to script this using a standard unix shell (sh).
-
-For this example there are 2 main scripts:
-
-1. `copy_files.sh` - copies all the software to the CentOS host.
-2. `setup.sh` - runs a "hands off" installation.
-
-### A note on software you need to provide.
-
-The scripts are going to assume you are providing:
-
-1. A single RPM for PCE Core has been provided
-2. A single RPM for PCE UI has been provided
-3. A single VEN Bundle file has been provided if it is desired to be installed.
-
-Put these files in the current working directory. They will be copied to the proper locations on the CentOS host by the copy_files.sh script. These files will be used by the setup.sh script that is copied in the root directory of the CentOS host.
-
-Once the copy_files.sh script is run login as root to the CentOS host and run the setup.sh script located in the /root directory. If you like the defaults set up in the script it will run as-is. Or modify to your liking.
-
-I'll explain the resizedisk1.sh and resizedisk2.sh scripts at a later date.
+[See this document](automation/AUTOMATION.md) for more information on how to automate the installation process with a simple script that will setup and run a single node cluster in about 5 minutes.
 
 ## <a name=backups>Backing up the database </a>
 
