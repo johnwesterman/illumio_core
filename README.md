@@ -4,13 +4,12 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20221213202924;
-Version 2022.12
-Tuesday December 13, 2022 20:29
+Serial number for this document is 20230126160530;
+Version 2022.01
+Thursday January 26, 2023 16:05
 
 Changed:
-1. Minor edits related to VEN repo installation.
-2. Updated the automation process and setup script for SNC installation.
+1. Minor edits.
 ```
 
 ## Install base packages
@@ -99,14 +98,15 @@ HOSTNAME=[your-new-hostname]
 ```
 
 ### Second:
-```
-vi /etc/hosts
-```
 File contents:
 ```
 x.x.x.x	xxx
 vi /etc/resolv.conf
 nameserver x.x.x.x
+```
+Note that if you have good resolution via the DNS server above and have A-records for all of your nodes updateing the hosts file is unnecessary. If you do not have A-records defined for your environment you will need to modifiy the hosts file for all of the nodes in the cluster as well as any VEN enabled workload that will touch the cluster. It is a lot easier to set up the DNS before starting this project but often that is not possible so edit the hosts files as required for your environment.
+```
+vi /etc/hosts
 ```
 
 ## Install the PCE and UI software via RPM:
@@ -325,9 +325,9 @@ export_flow_summaries_to_syslog:
 #- accepted
 ```
 
-## UPGRADE PROCESS
+## Upgrade the PCE
 
-The abbreviated (snc) upgrade process is as follows:
+This section will describe the abbreviated (SNC) upgrade process.
 
 Note: new in 19.3+ the PCE base and UI software are separate packages. Keep in mind that when updating both the PCE and UI in order to make sure you have all the dependencies put both on the RPM update as I've indicated below so you get it all without error messages. This is not clear in the current documenation so I've made a note of it here. It's optional for an RPM update so I've made it look that way.
 
@@ -416,7 +416,7 @@ If you are resetting because of an IP address change make sure that the IP addre
 
 You can find more information on backing up the data in a PCE by going to [Illumio Documentation](https://docs.illumio.com/). When I create an SNC that I am going to use for a while I'll make sure I have regular backups. Even if you have an MNC you should do backups and make sure the backup is off the systems and put in a safe place. **Also remember no crazy stuff here. If you backup the database on one set of IP addressess you can't restore it to another. The restore will fail. Changing the IP address of an SNC or MNC takes planning. You are best to reach out to your SE or PS team mate to help with this.** This example is how to backup an SNC0 and then restore that database to the same IP address as it was pulled from.
 
-### Backing up the database
+### Back up the database
 
 An example of backing up the database will look like this. You will want to be in full running status to take the backup (run level 5). I will get backups of both the database as well as the runtime file like this:
 ```
@@ -426,7 +426,7 @@ ctldb dump --file /tmp/[serial_number]_pce_database
 cp /etc/illumio-pce/runtime_env.yml /tmp/[serial_number]_runtime_env.yml
 ```
 
-### Restoring the database
+### Restore the database
 
 In order to restore a database that you backed up in the example above you will essentially reverse the process. You will need to be in run level 1 to do the restore. Once the restore is complete you will need to go back to run level 5.
 
