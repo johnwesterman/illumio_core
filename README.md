@@ -4,12 +4,13 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20230126160530;
-Version 2022.01
-Thursday January 26, 2023 16:05
+Serial number for this document is 20230717225412;
+Version 2023.07
+Monday July 17, 2023 22:54
 
 Changed:
 1. Minor edits.
+2. Notes on certificate expiry. The new versions of PCE will not run with invalid certificates.
 ```
 
 ## Install base packages
@@ -181,6 +182,8 @@ shutdown -r now
 
 ## Certificate installation(s)
 
+On a personal note, I encourage you to go through the full process of generating a valid certificate for your PCE installation. This certificate should be globally trusted by all systems that will use the PCE for security policy. You can use certificates that are self-signed or otherwise not valid but your life will be much easier if you provide valid certificates up front and keep those certificates updated as time moves forward.
+
 NOTE: By default the installer will place certificates and private key as follows:
 ```
 web_service_private_key [/var/lib/illumio-pce/cert/server.key]
@@ -215,6 +218,8 @@ The **--generate-cert** option generates a self-signed certificate, installs tha
 It is possible to use your own self signed certificate. Keep in mind it has to be in a certain format with extended attributes, verified and installed by hand. It's possible but I am not going to cover that topic here.
 
 **NOTE**: The server certificate is going to be a combination of the server certificate, the certificate chain including all intermediate certificates and the root certificate, in that order. If the certificate file does not have all of these certificates contained with it you will want to used an editor and make it so. Use the following commands to validate the certificate file.
+
+The newest versions of the PCE will not run without a valid certificate. If your certificate expires the services will not start. I encourage you to use a valid, globally trusted certificate for your PCE.
 
 For more information on **setting up, validating and testing certificates** [reference this document](CERTIFICATE.md).
 
