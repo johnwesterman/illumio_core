@@ -25,9 +25,11 @@ And another check that is displayed a little easier to read is to ask the PCE ab
 
 ```
 ctlenv setup -ql --test 5
+```
 
 -or-
 
+```
  /opt/illumio-pce/illumio-pce-env setup --test 5 --list
 ```
 
