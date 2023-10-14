@@ -4,13 +4,12 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20230717225412;
-Version 2023.07
-Monday July 17, 2023 22:54
+Serial number for this document is 20231013210457;
+Version 2023.10
+Friday October 13, 2023 21:06
 
 Changed:
 1. Minor edits.
-2. Notes on certificate expiry. The new versions of PCE will not run with invalid certificates.
 ```
 
 ## Install base packages
@@ -478,7 +477,7 @@ What the above will do is every morning at 1am a backup will be made and put in 
 
 ## Changing an IP address of a PCE
 
-Warning: You are swimming with sharks here. Be careful. Back up your database now.
+**Warning: You are swimming with sharks here. Be careful. Back up your database now.**
 
 The following comments are unsupported guidance to be used as interesting information only.
 
