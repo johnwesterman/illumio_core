@@ -4,9 +4,9 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20231013210457;
-Version 2023.10
-Friday October 13, 2023 21:06
+Serial number for this document is 20231207100930;
+Version 2023.12
+Thursday December 07, 2023 10:09
 
 Changed:
 1. Minor edits.
@@ -109,7 +109,7 @@ Note that if you have good resolution via the DNS server above and have A-record
 vi /etc/hosts
 ```
 
-## Install the PCE and UI software via RPM:
+## Install the PCE and UI software.
 
 Illumio Core uses bzip2. This will insure it is installed for use.
 ```
@@ -192,7 +192,7 @@ trusted_ca_bundle [/etc/ssl/certs/ca-bundle.crt]
 
 NOTE: Once you have a private key and certificate bundle the same will be used on each of the nodes in a cluster. If you are using an SNC you only need to place it in the proper place once. If you are using an MNC you will need to replicate the data across all of the nodes. The good news is that the same information is used for all nodes. Unique certificates are not required.
 
-## Setting up the PCE environment
+## PCE System Setup
 
 **AS ROOT** user:
 ```
