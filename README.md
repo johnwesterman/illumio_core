@@ -4,12 +4,12 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20231207100930;
-Version 2023.12
-Thursday December 07, 2023 10:09
+Serial number for this document is 20240103225846;
+Version 2024.1
+Wednesday January 03, 2024 22:58
 
 Changed:
-1. Minor edits.
+1. Added FIPS language section.
 ```
 
 ## Install base packages
@@ -490,3 +490,38 @@ These are just notes. Things to consider. In the example I am not changing the F
 1. If done properly you should not have to "unpair/repair" any VENs.
 1. You could go into "visibility" mode (not using enforcement mode) before making the change. This way the VEN will have no problem physically connecting to the new IP address. In this mode, you will not be blocking any traffic (keep this in mind).
 1. You cannot change the VEN enforcement mode from the VEN side. It must be done from the PCE.
+
+## Setting up FIPS operational mode (CENTOS/REHL 8/9)
+
+To enable the cryptographic module self-checks mandated by the Federal Information Processing Standard (FIPS) 140-3, you must operate RHEL 8 in FIPS mode. Starting the installation in FIPS mode is the recommended method if you aim for FIPS compliance.
+
+ The Federal Information Processing Standards (FIPS) Publication 140 is a series of computer security standards developed by the National Institute of Standards and Technology (NIST) to ensure the quality of cryptographic modules. The FIPS 140 standard ensures that cryptographic tools implement their algorithms correctly. Runtime cryptographic algorithm and integrity self-tests are some of the mechanisms to ensure a system uses cryptography that meets the requirements of the standard.
+
+To ensure that your RHEL system generates and uses all cryptographic keys only with FIPS-approved algorithms, you must switch RHEL to FIPS mode. 
+
+To do this there are three commands to follow:
+
+1. fips-mode-setup --enable
+
+```
+Command ouput:
+Kernel initramdisks are being regenerated. This might take some time.
+Setting system policy to FIPS
+Note: System-wide crypto policies are applied on application start-up.
+It is recommended to restart the system for the change of policies
+to fully take place.
+FIPS mode will be enabled.
+Please reboot the system for the setting to take effect.
+```
+2. reboot
+
+```
+Machine will reboot.
+```
+
+3. fips-mode-setup --check
+
+```
+Command ouput:
+FIPS mode is enabled.
+```
