@@ -23,7 +23,7 @@ For bare minimum:
 dnf update -y
 ```
 ```
-dnf install -y net-tools bzip2 ntp
+dnf install -y net-tools bzip2 ntp tmux htop
 ```
 
 for CentOS/REHL/Rocky release 8+:
