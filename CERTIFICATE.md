@@ -42,7 +42,7 @@ TLS Web Server Authentication, TLS Web Client Authentication
 
 ### Certificates with passwords
 
-The Illumio platform expects private keys and certificates without passwords. If you have a certificate or private key with a password you will need to remove the password before using.
+**The Illumio platform expects private keys and certificates without passwords**. If you have a certificate or private key with a password you will need to remove the password before using.
 
 To extract the password from a PEM file using OpenSSL, you can use the following command:
 
