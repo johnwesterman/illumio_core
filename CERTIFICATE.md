@@ -40,6 +40,20 @@ TLS Web Server Authentication, TLS Web Client Authentication
 ```
 *If you do not have TLS web and client you will need to generate a new certificate that include these attributes.*
 
+### Certificates with passwords
+
+The Illumio platform expects private keys and certificates without passwords. If you have a certificate or private key with a password you will need to remove the password before using.
+
+To extract the password from a PEM file using OpenSSL, you can use the following command:
+
+```bash
+openssl rsa -in yourfile.pem -out keyfile.txt
+```
+
+Replace `yourfile.pem` with the path to your PEM file. When you run this command, OpenSSL will prompt you to enter the password for the PEM file. After entering the correct password, OpenSSL will extract the private key from the PEM file and save it to `keyfile.txt`.
+
+Please note that you should ensure that you have the necessary permissions to access and extract the private key from the PEM file. Additionally, make sure to keep the extracted key file secure and handle it with care to maintain the security of your private key.
+
 ### Certificate relationship
 
 _**Note that MD5 is use to calculate these values. In a FIPS certified operating system MD5 will be disabled. You will have to check these certificates on a system that will support MD5 calculations.**_
