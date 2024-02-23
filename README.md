@@ -4,12 +4,13 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20240103225846;
-Version 2024.1
-Wednesday January 03, 2024 22:58
+Serial number for this document is 20240223112752;
+Version 2024.3
+Friday February 23, 2024 11:27
 
 Changed:
 1. Added FIPS language section.
+2. Added language on using MD5 checking certificates.
 ```
 
 ## Install base packages

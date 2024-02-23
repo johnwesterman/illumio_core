@@ -40,6 +40,10 @@ TLS Web Server Authentication, TLS Web Client Authentication
 ```
 *If you do not have TLS web and client you will need to generate a new certificate that include these attributes.*
 
+### Certificate relationship
+
+_**Note that MD5 is use to calculate these values. In a FIPS certified operating system MD5 will be disabled. You will have to check these certificates on a system that will support MD5 calculations.**_
+
 Check to insure that the Private Key and the Certificate are related:
 ```
 openssl rsa -modulus -noout -in server.key | openssl md5
