@@ -1,17 +1,29 @@
-## Creating the certificates
+# All Things Certificates
+
+```
+Author: John Westerman, Illumio, Inc.
+Serial number for this document is 20240223194706;
+Version 2024.3
+Friday February 23, 2024 19:47
+
+Changed:
+1. Cleaned up some of the wording.
+2. Added highlighting and references to other documents using hyperlinks.
+3. Fixed paragraph nesting.
+```
 
 Certificates are used for 3 major components in the PCE software installation that use TLS:
-- Web Service – Used to secure access to the PCE web console, as well as that provided by the Illumio ASP REST API.
-- Event Service – Provides continuous, secure connectivity from the PCE to the VENs under management and provides a notification capability so that VENs can be instructed to update policy on the host Workloads.
-- Service Discovery – Used for cluster management between PCE node members in the cluster and allows real time alerting on service availability and status.
+- **Web Service** – Used to secure access to the PCE web console, as well as that provided by the Illumio ASP REST API.
+- **Event Service** – Provides continuous, secure connectivity from the PCE to the VENs under management and provides a notification capability so that VENs can be instructed to update policy on the host Workloads.
+- **Service Discovery** – Used for cluster management between PCE node members in the cluster and allows real time alerting on service availability and status.
 
-When building your certificate it will be important to remember these key attributes included with the certificate:
+When building your certificate it will be important to remember these key x509 attributes included with the certificate:
 
-- TLS Web Server Authentication Extended Key Usage
-- TLS Web Client Authentication Extended Key Usage
-- Subject Alternative Names (SAN) are included for the PCE cluster VIP name (load balancer FQDN) and core node names. You do not need to include the data nodes or any IP addresses in the SAN field of the certificate.
+- TLS Web **Server Authentication** Extended Key Usage
+- TLS Web **Client Authentication** Extended Key Usage
+- **Subject Alternative Names (SAN)** are included for the PCE cluster VIP name (load balancer FQDN) and core node names. You do not need to include the data nodes or any IP addresses in the SAN field of the certificate.
 
-A common certificate will be used for all these functions but it is important that all the right options are present in the certificate to allow for secure communication of the software.
+A single, common, certificate will be used for all these functions on all of the nodes but it is important that all the right options are present in the certificate to allow for secure communication of the software.
 
 ## Validating the Certificate.
 
@@ -21,7 +33,7 @@ Check the certificate to be valid:
 ```
 openssl x509 -text -noout -in <certificate_name>
 ```
-And another check that is displayed a little easier to read is to ask the PCE about the certificate. The following command will look at all of the certificates in the certificate chain and display information for each of them. If there is a problem with the certificate chain it will show up in this data.
+Another check that is displayed a little easier to read is to ask the PCE about the certificate. The following command will look at all of the certificates in the certificate chain and display information for each of them. If there is a problem with the certificate chain it will show up in this data. This is an Illumio specific command and uses my command line aliases [explained here](README.md#set-up-for-command-aliasing-optional).
 
 ```
 ctlenv setup -ql --test 5
@@ -40,7 +52,7 @@ TLS Web Server Authentication, TLS Web Client Authentication
 ```
 *If you do not have TLS web and client you will need to generate a new certificate that include these attributes.*
 
-### Certificates with passwords
+## Certificates with passwords
 
 **The Illumio platform expects private keys and certificates without passwords**. If you have a certificate or private key with a password you will need to remove the password before using.
 
@@ -54,7 +66,7 @@ Replace `yourfile.pem` with the path to your PEM file. When you run this command
 
 Please note that you should ensure that you have the necessary permissions to access and extract the private key from the PEM file. Additionally, make sure to keep the extracted key file secure and handle it with care to maintain the security of your private key.
 
-### Certificate relationship
+## Certificate Relationship
 
 _**Note that MD5 is use to calculate these values. In a FIPS certified operating system MD5 will be disabled. You will have to check these certificates on a system that will support MD5 calculations.**_
 
