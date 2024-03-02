@@ -4,13 +4,12 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20240223112752;
+Serial number for this document is 20240302142007;
 Version 2024.3
-Friday February 23, 2024 11:27
+Saturday March 02, 2024 14:20
 
 Changed:
-1. Added FIPS language section.
-2. Added language on using MD5 checking certificates.
+1. Added automations/substitions for some of the commands.
 ```
 
 ## Install base packages
@@ -298,6 +297,12 @@ This command installs the VEN bundle:
 sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/[illumio-ven-bundle-NNNNNNNNN.tar.bz2] --compatibility-matrix /tmp/[illumio-release-compatibility-YYY.tar.bz2] --orgs all --default --no-prompt
 ```
 
+If you are command line lazy (like me) and have copied the files without duplicates to the /tmp directory you can install the software with this command:
+
+```
+sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/`ls illumio-ven-bundle-*` --compatibility-matrix /tmp/`ls illumio-release-compatibility-*` --orgs all --default --no-prompt
+```
+
 where NNNNNNNN is the build version downloaded from the web site and YYY is the latest compatability matrix file number. And if you desire to be prompted remove the --no-prompt option.
 
 For example:
@@ -340,18 +345,17 @@ for the PCE base software:
 ```
 ctl status
 ```
+Back up the database and runtime files. I have created some shortcuts so this is more automatic. I am assuming you have put the files in the /tmp directory. If you put them somewhere else or want to use the full file name do your own subsitution.
 ```
-ctldb dump --file /tmp/[serial_number]_pce_database
-```
-```
-cp /etc/illumio-pce/runtime_env.yml /tmp/[serial_number]_runtime_env.yml
+ctldb dump --file /tmp/`/usr/bin/date '+%Y-%m-%d-'`-pce-database
+cp /etc/illumio-pce/runtime_env.yml /tmp/`/usr/bin/date '+%Y-%m-%d-'`-runtime-env.yml
 ```
 ```
 ctl stop
 ```
-... upgrade both the core and UI software:
+Upgrade both the core and UI software. Note that I am doing system subsitutions. I am assuming you put the two files in the /tmp directory and they have standard naming conventions. If not, do your own substitutions.
 ```
-rpm -Uvh illumio-pce-xx.x.x-xxxxx.x86_64.rpm illumio-pce-ui-xx.x.x.UIx-x.x86_64.rpm
+rpm -Uvh `ls /tmp/illumio-pce-[0-9]*` `ls /tmp/illumio-pce-ui-*`
 ```
 ... Check to make sure things are still ok:
 ```

@@ -2,9 +2,9 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20240223194706;
+Serial number for this document is 20240302143941;
 Version 2024.3
-Friday February 23, 2024 19:47
+Saturday March 02, 2024 14:39
 
 Changed:
 1. Cleaned up some of the wording.
@@ -75,6 +75,7 @@ Check to insure that the Private Key and the Certificate are related:
 openssl rsa -modulus -noout -in server.key | openssl md5
 openssl x509 -modulus -noout -in server.crt | openssl md5
 ```
+If you are using a FIPS (Federal Information Processing Standards) enabled operating system you will need to use one of the other hashing methods that are considered more secure. [I describe that process here](#fipshashing). Switch MD5 with one of the other hashing algorythms as necessary to validate the relationship above.
 
 NOTE: For the evaluation certificates, the file names I am working with are:
 ```
@@ -161,3 +162,25 @@ So how to go about doing this.
 * Make relevant changes as indicated above to each of the other nodes changing their "node_type" to reflect the function of the node.
 
 Once you have completed the work above you can continue to start and run the PCE MNC just like you would for an SNC. These steps follow.
+
+<a id="fipshashing"></a>
+### FIPS and hashing
+
+When working with a FIPS (Federal Information Processing Standards) enabled system, you need to ensure that you are using approved cryptographic algorithms. In addition to MD5, which is not considered secure for cryptographic purposes due to vulnerabilities, you can use the following hash algorithms that are FIPS-compliant:
+
+1. **SHA-1 (Secure Hash Algorithm 1)**:
+   - While SHA-1 is still considered secure for some non-cryptographic purposes, it is generally not recommended for cryptographic applications due to vulnerabilities. It is included here for completeness, but it is advisable to use stronger algorithms.
+
+2. **SHA-2 (Secure Hash Algorithm 2)**:
+   - SHA-2 includes several variants such as SHA-256, SHA-384, and SHA-512. These are widely used and considered secure for cryptographic purposes. SHA-256 is commonly used for digital signatures and certificate verification.
+
+3. **SHA-3 (Secure Hash Algorithm 3)**:
+   - SHA-3 is the latest member of the Secure Hash Algorithm family, designed as a replacement for SHA-2. It offers different internal workings compared to SHA-2 and is also considered secure.
+
+4. **BLAKE2**:
+   - BLAKE2 is a cryptographic hash function that is faster than MD5 and SHA-1 while providing better security. It is not part of the SHA family but is a popular choice for secure hashing.
+
+5. **Whirlpool**:
+   - Whirlpool is a cryptographic hash function that produces a hash value of 512 bits. It is designed to be secure and is an alternative to the SHA family of hash functions.
+
+When working with a FIPS-enabled Linux workload, you should consult the specific FIPS guidelines and regulations applicable to your environment to ensure compliance. It's important to use approved cryptographic algorithms and configurations to maintain the security and integrity of your system and data.
