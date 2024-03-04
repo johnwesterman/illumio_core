@@ -1,11 +1,9 @@
 ```
 Author: John Westerman, Illumio, Inc.
-Saturday March 02, 2024 14:39
+Monday March 04, 2024 09:00
 
 Changed:
-1. Cleaned up some of the wording.
-2. Added highlighting and references to other documents using hyperlinks.
-3. Fixed paragraph nesting.
+1. First version of these words.
 ```
 
 # VDI Deployment best practice
