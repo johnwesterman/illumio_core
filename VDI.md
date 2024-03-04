@@ -31,14 +31,16 @@ It is important to note that using this method requires you to use a pairing pro
 
 Starting with VEN software 23.2.22 it is no longer required to use a shutdown PowerShell script.
 
-1. Create a pairing profile using applying the labels you want for the VDI instance.
-2. Install the VEN like you normally would on the golden image. There is no need to use the logoud script mentioned above in this process.
-3. Occasionally, [workloader will be run](#workloader) to clean up any VDI orphans. This will be placed in a cron job on one of the PCE nodes or another machine dedicated to this task.
+1. Pair the VEN on the Golden image and label as needed.
+2. Install the VEN like you normally would on the golden image. There is no need to use the logout script mentioned above in this process.
+3. After the golden image is shutdown and the snapshot is taken, the golden image must be turned back on.
+4. [Workloader will be run daily](#workloader) to clean up any VDI orphans. This will be placed in a cron job on one of the PCE nodes or another machine dedicated to this task.
+5. The enforcement state of the golden image workload object in the PCE is how you change the enforcement state of the non-persistent VDI clones.
 
 ### Workloader
 
 To check for orphaned VENs using workloader you will use this command structure:
 
 ```
-workloader unpair --hours 40 --app ERP --env PROD --restore saved --update-pce --no-prompt
+workloader unpair --hours 40 --app [YOUR APPLICATION LABEL] --env [YOUR APPLICATION LABEL] --restore saved --update-pce --no-prompt
 ```
