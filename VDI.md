@@ -44,3 +44,7 @@ To check for orphaned VENs using workloader you will use this command structure:
 ```
 workloader unpair --hours 40 --app [YOUR APPLICATION LABEL] --env [YOUR APPLICATION LABEL] --restore saved --update-pce --no-prompt
 ```
+
+## Illumio Documentation
+
+The official [documenation for VDI is located online here](https://docs.illumio.com/core/23.5/Content/Guides/security-policy/security-policy-objects/adaptive-user-segmentation.htm).
