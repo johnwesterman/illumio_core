@@ -4,12 +4,12 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20240302142007;
+Serial number for this document is 20240322160033;
 Version 2024.3
-Saturday March 02, 2024 14:20
+Friday March 22, 2024 16:00
 
 Changed:
-1. Added automations/substitions for some of the commands.
+1. Updated some VEN bundle managment wording.
 ```
 
 ## Install base packages
@@ -279,7 +279,7 @@ ctldb create-domain --user-name demo@illumio.com --full-name 'Demo User' --org-n
 
 At this point, you are done setting up the core system. The PCE should be up and running. You should have a clean, freshly installed system ready to pair workloads. You can log into the system and start pairing workloads now.
 
-## Setting up the VEN repository.  
+## Setting up and modifying the VEN repository.  
 
 It is recommended that you use the PCE to be a repository for the VEN software. This section will walk you through that process. You will need to get the VEN bundles you want to use from the Illumio Support web site. They will be clearly identified in the VEN download section of the software download area. They will have a .bz2 extension.
 
@@ -290,6 +290,8 @@ Once you obtain these files copy them to the /tmp directory of the core0/snc nod
 To do the following make sure you have a VEN bundle file as well as the compatibility matrix file. All are downloadable from the support web site.
 
 Copy the installation files to the /tmp directory in the examples that follow. Any user can pull from /tmp. It is important because the ilo-pce user is used for this set of commands (not root).
+
+### Installing the VEN Bundle
 
 This command installs the VEN bundle:
 
@@ -313,7 +315,24 @@ sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.
 
 **NOTE:** Keep this in mind; Make sure you use fully qualified names for the file for this process. For example, if you are in the /tmp directory don't expect illumio-pce-ctl to find this in the local working directory (it is not looking for it there). For whatever reason the tool will not look in to your current working directory for this file so be sure and specify the path. In the case above, I have supplied the full file path and file name. ilo-pce will also need at least read capability for these files since the command is done using ilo-pce permissions.
 
+### Listing the VEN bundles that are installed
+
+This command will list the bundle files that are currently installed:
+
+```
+sudo -u ilo-pce illumio-pce-ctl ven-software-releases-list | grep release:
+```
+
+### Removing an existing VEN bundle from a PCE
+
+This command can be used to remove a specific bundle release. You can get the releases that are installed in the command above and the replace [release] below with that number you want to remove.
+
+```
+sudo -u ilo-pce illumio-pce-ctl ven-software-release-delete [release]
+```
+
 ## runtime_env settings and suggested settings
+
 While none of the following is required, I recommend you consider adding the following to the runtime_env.yml file. Especially the internal_service_ip option. If you do not bind to an IP address and let the PCE decide for itself things can get weird if you have multiple IP addresses or non RFC1918 addresses in use. If you do not specify an IP address and there are multiple addresses in use in the cluster the PCE will use the highest numbered interface. So if you don't want to deal with crazy, don't let the PCE choose this on it's own.
 
 ```
@@ -347,8 +366,9 @@ ctl status
 ```
 Back up the database and runtime files. I have created some shortcuts so this is more automatic. I am assuming you have put the files in the /tmp directory. If you put them somewhere else or want to use the full file name do your own subsitution.
 ```
-ctldb dump --file /tmp/`/usr/bin/date '+%Y-%m-%d-'`-pce-database
-cp /etc/illumio-pce/runtime_env.yml /tmp/`/usr/bin/date '+%Y-%m-%d-'`-runtime-env.yml
+ctldb dump --file /tmp/`/usr/bin/date '+%Y-%m-%d-'`pce-database
+cp /etc/illumio-pce/runtime_env.yml /tmp/`/usr/bin/date '+%Y-%m-%d-'`runtime-env.yml
+
 ```
 ```
 ctl stop
@@ -433,6 +453,12 @@ ctldb dump --file /tmp/[serial_number]_pce_database
 ```
 ```
 cp /etc/illumio-pce/runtime_env.yml /tmp/[serial_number]_runtime_env.yml
+```
+Or if you are lazy like me use this method to auto-name the files for you:
+```
+ctldb dump --file /tmp/`/usr/bin/date '+%Y-%m-%d-'`pce-database
+cp /etc/illumio-pce/runtime_env.yml /tmp/`/usr/bin/date '+%Y-%m-%d-'`runtime-env.yml
+
 ```
 
 ### Restore the database
