@@ -4,9 +4,9 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20240322160033;
-Version 2024.3
-Friday March 22, 2024 16:00
+Serial number for this document is 20240429091243;
+Version 2024.4
+Monday April 29, 2024 09:12
 
 Changed:
 1. Updated some VEN bundle managment wording.
@@ -188,6 +188,10 @@ NOTE: By default the installer will place certificates and private key as follow
 web_service_private_key [/var/lib/illumio-pce/cert/server.key]
 web_service_certificate [/var/lib/illumio-pce/cert/server.crt]
 trusted_ca_bundle [/etc/ssl/certs/ca-bundle.crt]
+```
+If you want a copy of the certificate directory it is always here:
+```
+/var/lib/illumio-pce/cert/
 ```
 
 NOTE: Once you have a private key and certificate bundle the same will be used on each of the nodes in a cluster. If you are using an SNC you only need to place it in the proper place once. If you are using an MNC you will need to replicate the data across all of the nodes. The good news is that the same information is used for all nodes. Unique certificates are not required.
