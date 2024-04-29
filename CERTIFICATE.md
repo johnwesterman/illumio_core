@@ -2,14 +2,15 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20240302143941;
-Version 2024.3
-Saturday March 02, 2024 14:39
+Serial number for this document is 20240429104819;
+Version 2024.4
+Monday April 29, 2024 10:48
 
 Changed:
 1. Cleaned up some of the wording.
 2. Added highlighting and references to other documents using hyperlinks.
 3. Fixed paragraph nesting.
+4. Addes pkcs7 certficate wording.
 ```
 
 Certificates are used for 3 major components in the PCE software installation that use TLS:
@@ -184,3 +185,43 @@ When working with a FIPS (Federal Information Processing Standards) enabled syst
    - Whirlpool is a cryptographic hash function that produces a hash value of 512 bits. It is designed to be secure and is an alternative to the SHA family of hash functions.
 
 When working with a FIPS-enabled Linux workload, you should consult the specific FIPS guidelines and regulations applicable to your environment to ensure compliance. It's important to use approved cryptographic algorithms and configurations to maintain the security and integrity of your system and data.
+
+## Working with PKCS7 Certificates.
+
+To convert a PKCS#7 certificate (also known as a .p7b or .p7c file) to PEM format, you can follow these steps using OpenSSL, a widely-used tool for working with cryptographic files:
+
+1. **Install OpenSSL**: If you don't already have OpenSSL installed on your system, you can download it from the official website or install it using a package manager for your operating system.
+
+2. **Convert PKCS#7 to PEM**:
+   - Open a terminal or command prompt.
+   - Run the following OpenSSL command to extract the certificates from the PKCS#7 file and convert them to PEM format:
+     ```
+     openssl pkcs7 -print_certs -in yourfile.p7b -out certificates.pem
+     ```
+     Replace `yourfile.p7b` with the path to your PKCS#7 file and `certificates.pem` with the desired output file name for the PEM format certificates.
+
+3. **Verify the Conversion**:
+   - Once the command has been executed successfully, you should have a PEM file containing the certificates extracted from the PKCS#7 file.
+   - You can verify the contents of the PEM file using a text editor or by running the following command:
+     ```
+     openssl x509 -in certificates.pem -text -noout
+     ```
+     This command will display the details of the certificate(s) in the PEM file.
+
+By following these steps, you should be able to convert a PKCS#7 certificate file to PEM format using OpenSSL. Make sure to securely store and manage the PEM format certificates as needed for your specific use case.
+
+### PKCS7 Certificate contents
+
+A PKCS#7 certificate file, also known as a .p7b or .p7c file, typically contains one or more digital certificates in a specific format defined by the Public-Key Cryptography Standards (PKCS) #7 specification. Here is what is typically contained in a PKCS#7 certificate file:
+
+1. **Digital Certificates**: The primary content of a PKCS#7 certificate file is one or more digital certificates. These certificates are used to establish the identity of entities in a secure manner. Each certificate contains information such as the public key, subject (entity being identified), issuer (entity issuing the certificate), validity period, and other metadata.
+
+2. **Certificate Chain**: A PKCS#7 certificate file may contain a chain of certificates, also known as a certificate chain. This chain includes the end-entity certificate (the certificate for the entity being identified) along with intermediate certificates and possibly a root certificate. The chain helps establish a trust relationship between the end-entity certificate and a trusted root certificate authority.
+
+3. **Certificate Revocation Lists (CRLs)**: In some cases, a PKCS#7 certificate file may include Certificate Revocation Lists (CRLs). CRLs contain information about certificates that have been revoked by the issuing certificate authority before their expiration date. This information helps ensure the security and integrity of the certificate ecosystem.
+
+4. **Certificate Attributes**: PKCS#7 certificate files may also include additional attributes or metadata associated with the certificates, such as certificate extensions, key usage information, signature algorithms, and other relevant details.
+
+5. **Encrypted Data**: In some scenarios, a PKCS#7 certificate file may also contain encrypted data, such as encrypted messages or encrypted keys. This encrypted data can be securely transmitted or stored using the certificates contained in the file.
+
+Overall, a PKCS#7 certificate file serves as a container for digital certificates and related cryptographic information, facilitating secure communication, authentication, and data protection in various applications and systems. When working with PKCS#7 certificate files, it is important to understand the contents and structure of the file to ensure proper handling and utilization of the certificates contained within.
