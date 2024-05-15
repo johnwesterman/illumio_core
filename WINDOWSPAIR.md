@@ -34,7 +34,13 @@ This command to run the pairing by hand is located in "c:\Program Files\Illumio"
 If you get a certificate error you may have to install the certificate bundle. [Find out how to install bundle on Windows with this link](
 http://www.thewindowsclub.com/manage-trusted-root-certificates-windows).
 
-If you want to see the filters Once the VEN is installed on Windows: the "iptables --list -an" equivalent Windows command is <span style="color:red;"><b>netsh wfp show filters</b></span>. As a result of this command, a filters.xml file will be generated. You can open and inspect that file with Notepad. It is very cryptic but all of the firewall rules in the WFP will be in this listing.
+If you want to see the filters once the VEN is installed the power shell Windows command is:
+
+```
+netsh wfp show filters
+```
+
+As a result of this command, a **filters.xml** file will be generated. You can open and inspect that file with Notepad. It is very cryptic but all of the firewall rules in the WFP will be in this listing.
 
 ### Deactivating a VEN.
 
