@@ -4,12 +4,12 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20240429091243;
-Version 2024.4
-Monday April 29, 2024 09:12
+Serial number for this document is 20241218133237;
+Version 2024.12
+Wednesday December 18, 2024 13:32
 
 Changed:
-1. Updated some VEN bundle managment wording.
+1. Updated PCE backup wording; Added how to back up the traffic database.
 ```
 
 ## Install base packages
@@ -460,9 +460,13 @@ cp /etc/illumio-pce/runtime_env.yml /tmp/[serial_number]_runtime_env.yml
 ```
 Or if you are lazy like me use this method to auto-name the files for you:
 ```
-ctldb dump --file /tmp/`/usr/bin/date '+%Y-%m-%d-'`pce-database
+ctldb dump --file /tmp/`/usr/bin/date '+%Y-%m-%d-'`pce-policy
 cp /etc/illumio-pce/runtime_env.yml /tmp/`/usr/bin/date '+%Y-%m-%d-'`runtime-env.yml
 
+```
+If you also want to get the traffic data from the PCE you can:
+```
+sudo -u ilo-pce /opt/illumio-pce/illumio-pce-db-management traffic dump --file /tmp/`/usr/bin/date '+%Y-%m-%d-'`pce-traffic
 ```
 
 ### Restore the database
@@ -474,8 +478,9 @@ The three steps to restore are as follows:
 ```
 ctl start --runlevel 1
 ```
+Grab the file you created above:
 ```
-ctldb restore --file /tmp/[serial_number]_pce_database
+ctldb restore --file /tmp/[serial_number]-pce-policy
 ```
 ```
 ctl set-runlevel 5; ctl status -svw
