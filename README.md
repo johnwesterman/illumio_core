@@ -4,12 +4,13 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20241218133237;
-Version 2024.12
-Wednesday December 18, 2024 13:32
+Serial number for this document is 20251218224045;
+Version 2025.12
+Wednesday December 18, 2025 13:32
 
 Changed:
 1. Updated PCE backup wording; Added how to back up the traffic database.
+2. Language to make sure the proper language packs are installed on a minimal base OS.
 ```
 
 ## Install base packages
@@ -37,6 +38,30 @@ dnf install -y epel-release; dnf update -y
 dnf install -y bind-utils openssh-clients patch traceroute tcpdump ipset postfix logrotate ca-certificates procps-ng util-linux net-tools
 ```
 You will find that the above list of software is already installed. It is good to make sure though.
+
+## Language packs required
+
+Recently I came across an instance where the PostgresDB service never comes up. This is a very obscure error without much reason why it is happening in the logs.
+
+It turns out that if you do not have the proper language packs installed in the base OS this will happen.
+
+To insure you have these language packs:
+
+```
+dnf install langpacks-en.noarch
+```
+
+This will pull all dependencies including glibc-langpacks-en which is required to start the PostGre database.
+
+## Access to Chrony
+
+Chrony serice is required for the newer software to run properly. If you get an error "506 Cannot talk to daemon" this is a problem where user "ilo-pce" does not have permission to talk to the chrony service.
+
+To resolve this issue:
+
+```
+"user ilo-pce" to /etc/chrony.conf
+```
 
 ## Firewall and SE Linux configuration
 
