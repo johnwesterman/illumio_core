@@ -4,13 +4,14 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20251218224045;
-Version 2025.12
-Wednesday December 18, 2025 13:32
+Serial number for this document is 20260329124356;
+Version 2026.03
+Sunday March 29, 2026 12:43
 
 Changed:
 1. Updated PCE backup wording; Added how to back up the traffic database.
 2. Language to make sure the proper language packs are installed on a minimal base OS.
+3. Minimal text edits to correct language syntax.
 ```
 
 ## Install base packages
@@ -27,7 +28,7 @@ dnf update -y
 dnf install -y net-tools bzip2 ntp tmux htop
 ```
 
-for CentOS/REHL/Rocky release 8+:
+For CentOS/RHEL/Rocky release 8+:
 All of the above tools come with the minimal image. C8 uses chronyd (not ntp) which also will come installed.
 
 For all the gadgets for testing (optional):
@@ -45,7 +46,7 @@ Recently I came across an instance where the PostgresDB service never comes up. 
 
 It turns out that if you do not have the proper language packs installed in the base OS this will happen.
 
-To insure you have these language packs:
+To ensure you have these language packs:
 
 ```
 dnf install langpacks-en.noarch
@@ -55,7 +56,7 @@ This will pull all dependencies including glibc-langpacks-en which is required t
 
 ## Access to Chrony
 
-Chrony serice is required for the newer software to run properly. If you get an error "506 Cannot talk to daemon" this is a problem where user "ilo-pce" does not have permission to talk to the chrony service.
+Chrony service is required for the newer software to run properly. If you get an error "506 Cannot talk to daemon" this is a problem where user "ilo-pce" does not have permission to talk to the chrony service.
 
 To resolve this issue:
 
@@ -67,7 +68,7 @@ To resolve this issue:
 
 Turn off the firewall:
 
-on CentOS/REHL/Rocky 7.x:
+On CentOS/RHEL/Rocky 7.x:
 ```
 systemctl start ntpd.service
 ```
@@ -81,7 +82,7 @@ systemctl stop firewalld
 systemctl disable firewalld
 ```
 
-on CentOS/REHL/Rocky 8+:
+on CentOS/RHEL/Rocky 8+:
 Note: ntp should be installed but now is service chronyd (systemctl status chronyd). You will likely find that it is already running.
 ```
 systemctl stop firewalld
@@ -129,21 +130,21 @@ x.x.x.x	xxx
 vi /etc/resolv.conf
 nameserver x.x.x.x
 ```
-Note that if you have good resolution via the DNS server above and have A-records for all of your nodes updateing the hosts file is unnecessary. If you do not have A-records defined for your environment you will need to modifiy the hosts file for all of the nodes in the cluster as well as any VEN enabled workload that will touch the cluster. It is a lot easier to set up the DNS before starting this project but often that is not possible so edit the hosts files as required for your environment.
+Note that if you have good resolution via the DNS server above and have A-records for all of your nodes updating the hosts file is unnecessary. If you do not have A-records defined for your environment you will need to modify the hosts file for all of the nodes in the cluster as well as any VEN enabled workload that will touch the cluster. It is a lot easier to set up the DNS before starting this project but often that is not possible so edit the hosts files as required for your environment.
 ```
 vi /etc/hosts
 ```
 
 ## Install the PCE and UI software.
 
-Illumio Core uses bzip2. This will insure it is installed for use.
+Illumio Core uses bzip2. This will ensure it is installed for use.
 ```
 dnf -y install bzip2
 ```
 ```
 dnf install [illumio_pce_core.rpm] [illumio_pce_core_ui.rpm]
 ```
-note: If you upgrading your environment, see my upgrade notes towards the end of this file.
+note: If you are upgrading your environment, see my upgrade notes towards the end of this file.
 
 ## Set up for command aliasing (optional).
 
@@ -239,13 +240,13 @@ ctlenv check
 ```
 sudo -u ilo-pce illumio-pce-env check
 ```
-**NOTE: If you don't get "OK" at this piont then go back and sort things out before moving forward. This system will not work without a working certificate of some kind.**
+**NOTE: If you don't get "OK" at this point then go back and sort things out before moving forward. This system will not work without a working certificate of some kind.**
 
-The **--generate-cert** option generates a self-signed certificate, installs that certificate and related private key with proper permissions. Doing this sets up the PCE for a 90 day trial. If you leave that off you will be required to install your certificate in the directories with file names mentioned above or change the **/etc/illumio-pec/runtime_env.yml** file with the settings you want to use.
+The **--generate-cert** option generates a self-signed certificate, installs that certificate and related private key with proper permissions. Doing this sets up the PCE for a 90 day trial. If you leave that off you will be required to install your certificate in the directories with file names mentioned above or change the **/etc/illumio-pce/runtime_env.yml** file with the settings you want to use.
 
 It is possible to use your own self signed certificate. Keep in mind it has to be in a certain format with extended attributes, verified and installed by hand. It's possible but I am not going to cover that topic here.
 
-**NOTE**: The server certificate is going to be a combination of the server certificate, the certificate chain including all intermediate certificates and the root certificate, in that order. If the certificate file does not have all of these certificates contained with it you will want to used an editor and make it so. Use the following commands to validate the certificate file.
+**NOTE**: The server certificate is going to be a combination of the server certificate, the certificate chain including all intermediate certificates and the root certificate, in that order. If the certificate file does not have all of these certificates contained with it you will want to use an editor and make it so. Use the following commands to validate the certificate file.
 
 The newest versions of the PCE will not run without a valid certificate. If your certificate expires the services will not start. I encourage you to use a valid, globally trusted certificate for your PCE.
 
@@ -269,7 +270,7 @@ If a multi-node cluster is being used, verify the Data "Master NODE" election:
 ctldb show-primary
 ```
 
-NOTE: You will use the master node information in the next step. The command above will return the IP address of the master node. Do to initialize the PCE you will do so on the master data node.
+NOTE: You will use the master node information in the next step. The command above will return the IP address of the master node. To initialize the PCE you will do so on the master data node.
 
 ## Initialize the PCE Software:
 NOTE: Do the following ON THE DATABASE MASTER NODE determined FROM ABOVE
@@ -289,7 +290,7 @@ ctl status -svw
 ctl cluster-status
 ```
 
-If above everything statuses good open a browser and go to:
+If above everything looks good open a browser and go to:
 
 ```
 https://[pce_fqdn]:8443/login
@@ -324,17 +325,19 @@ Copy the installation files to the /tmp directory in the examples that follow. A
 
 This command installs the VEN bundle:
 
-```
-sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/[illumio-ven-bundle-NNNNNNNNN.tar.bz2] --compatibility-matrix /tmp/[illumio-release-compatibility-YYY.tar.bz2] --orgs all --default --no-prompt
-```
-
-If you are command line lazy (like me) and have copied the files without duplicates to the /tmp directory you can install the software with this command:
+If you are command line lazy (like me) and have copied the files *without duplicates* to the /tmp directory you can install the software with this command without thinking about syntax:
 
 ```
 sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/`ls illumio-ven-bundle-*` --compatibility-matrix /tmp/`ls illumio-release-compatibility-*` --orgs all --default --no-prompt
 ```
 
-where NNNNNNNN is the build version downloaded from the web site and YYY is the latest compatability matrix file number. And if you desire to be prompted remove the --no-prompt option.
+If you want to *old school* your day, here is the syntax:
+
+```
+sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/[illumio-ven-bundle-NNNNNNNNN.tar.bz2] --compatibility-matrix /tmp/[illumio-release-compatibility-YYY.tar.bz2] --orgs all --default --no-prompt
+```
+
+where NNNNNNNN is the build version downloaded from the web site and YYY is the latest compatibility matrix file number. And if you desire to be prompted remove the --no-prompt option.
 
 For example:
 
@@ -387,22 +390,23 @@ export_flow_summaries_to_syslog:
 
 This section will describe the abbreviated (SNC) upgrade process.
 
-Note: new in 19.3+ the PCE base and UI software are separate packages. Keep in mind that when updating both the PCE and UI in order to make sure you have all the dependencies put both on the RPM update as I've indicated below so you get it all without error messages. This is not clear in the current documenation so I've made a note of it here. It's optional for an RPM update so I've made it look that way.
+Note: new in 19.3+ the PCE base and UI software are separate packages. Keep in mind that when updating both the PCE and UI in order to make sure you have all the dependencies put both on the RPM update as I've indicated below so you get it all without error messages. This is not clear in the current documentation so I've made a note of it here. It's optional for an RPM update so I've made it look that way.
 
-for the PCE base software:
+### To update the PCE base software:
 ```
 ctl status
 ```
-Back up the database and runtime files. I have created some shortcuts so this is more automatic. I am assuming you have put the files in the /tmp directory. If you put them somewhere else or want to use the full file name do your own subsitution.
+Back up the database and runtime files. I have created some shortcuts so this is more automatic. I am assuming you have put the files in the /tmp directory. If you put them somewhere else or want to use the full file name do your own substitution.
 ```
 ctldb dump --file /tmp/`/usr/bin/date '+%Y-%m-%d-'`pce-database
 cp /etc/illumio-pce/runtime_env.yml /tmp/`/usr/bin/date '+%Y-%m-%d-'`runtime-env.yml
 
 ```
+Stop the PCE services
 ```
 ctl stop
 ```
-Upgrade both the core and UI software. Note that I am doing system subsitutions. I am assuming you put the two files in the /tmp directory and they have standard naming conventions. If not, do your own substitutions.
+Upgrade both the core and UI software. Note that I am doing system substitutions. I am assuming you put the two files in the /tmp directory and they have standard naming conventions. If not, do your own substitutions.
 ```
 rpm -Uvh `ls /tmp/illumio-pce-[0-9]*` `ls /tmp/illumio-pce-ui-*`
 ```
@@ -413,8 +417,7 @@ ctlenv check
 ```
 ctl start --runlevel 1;ctl status -svw
 ```
--- wait for the nodes to come up in run level 1 state
-To figure out which DB is the DB "master":
+-- wait for the nodes to come up in *run level 1* state. Once in *runlevel 1* state then you need to figure out which database node is the master node. To figure out which DB is the DB "master node":
 ```
 ctldb show-primary
 ```
@@ -431,11 +434,11 @@ Once the nodes are all running in run level 5 the PCE will be accessible.
 
 [See this document](HARDENING.md) for more information on how to harden a system to be put in the wild.
 
-## Reseting an environment
+## Resetting an environment
 
 While rare it has been known that a false start or mis-configuration will cause a system to need to be reset. Or maybe you just want to start over after a lengthy POC. This command should be used with caution as it will reset the persistent data store and other critical data in the system. If you are using a MNC this will need to be done on every data node that is in a cluster.
 
-The command is very destructive to a running system. This is essentially starting over. All of the database contents will be irreversably deleted. [You should have a backup](#backups) of your data before doing this if that is desired.
+The command is very destructive to a running system. This is essentially starting over. All of the database contents will be irreversibly deleted. [You should have a backup](#backups) of your data before doing this if that is desired.
 
 Set the system(s) in run level 1. If you try to do this in runlevel 5 on an MNC the system will failover and you will never be successful resetting the devices. You need to be in runlevel 1 so failover will not occur.
 ```
@@ -464,7 +467,7 @@ If you have installed a VEN repo you do not have to recreate that step in the re
 
 You have to rebuild the certificate unless that is something you want to do as a part of the reset. But do remember if you reset the certificate and have VENs paired they will need to be re-paired with the new certificate to work properly. Best to unpair, create new certificate and re-pair the workloads.
 
-If you are resetting because of an IP address change make sure that the IP address in DNS matches the IP address of the PCE. If you are doing local hosts reslolution make sure the IP addresses are correct there. Make sure that the ip addresses used in the runtime file (/etc/illumio-pce/runtime_env.yml) are correct. Any failure to rebuild properly should be corrected with a reset and database rebuild to set up the org properly.
+If you are resetting because of an IP address change make sure that the IP address in DNS matches the IP address of the PCE. If you are doing local hosts resolution make sure the IP addresses are correct there. Make sure that the ip addresses used in the runtime file (/etc/illumio-pce/runtime_env.yml) are correct. Any failure to rebuild properly should be corrected with a reset and database rebuild to set up the org properly.
 
 ## Automation of an install
 
@@ -472,7 +475,7 @@ If you are resetting because of an IP address change make sure that the IP addre
 
 ## <a name=backups>Backing up the database </a>
 
-You can find more information on backing up the data in a PCE by going to [Illumio Documentation](https://docs.illumio.com/). When I create an SNC that I am going to use for a while I'll make sure I have regular backups. Even if you have an MNC you should do backups and make sure the backup is off the systems and put in a safe place. **Also remember no crazy stuff here. If you backup the database on one set of IP addressess you can't restore it to another. The restore will fail. Changing the IP address of an SNC or MNC takes planning. You are best to reach out to your SE or PS team mate to help with this.** This example is how to backup an SNC0 and then restore that database to the same IP address as it was pulled from.
+You can find more information on backing up the data in a PCE by going to [Illumio Documentation](https://docs.illumio.com/). When I create an SNC that I am going to use for a while I'll make sure I have regular backups. Even if you have an MNC you should do backups and make sure the backup is off the systems and put in a safe place. **Also remember no crazy stuff here. If you backup the database on one set of IP addresses you can't restore it to another. The restore will fail. Changing the IP address of an SNC or MNC takes planning. You are best to reach out to your SE or PS team mate to help with this.** This example is how to backup an SNC0 and then restore that database to the same IP address as it was pulled from.
 
 ### Back up the database
 
@@ -548,7 +551,7 @@ The following comments are unsupported guidance to be used as interesting inform
 
 These are just notes. Things to consider. In the example I am not changing the FQDN, only the IP address. I want to put down things to consider when doing this.
 
-1. It is best that you reach out to your SE, PS or official support contacts to help you with this. Whether an SNC or MNC changing the IP address has some operational conciderations since so much security comes with some trusted IP address(es) and FQDNs.
+1. It is best that you reach out to your SE, PS or official support contacts to help you with this. Whether an SNC or MNC changing the IP address has some operational considerations since so much security comes with some trusted IP address(es) and FQDNs.
 1. The guaranteed way after letting the VEN's get the new IP from the PCE runtime is to take a backup of the PCE, reset the PCE and restore the DB.
 1. Update the PCE runtime_env.yml with the new IP and let the VENs soak in the changes before making the PCE side change.
 1. We typically like to make the PCE runtime addition with the new IP and leave the old IP for at least 30 mins to make sure the VENs check in and get the new IP.
