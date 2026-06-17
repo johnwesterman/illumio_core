@@ -4,9 +4,9 @@
 
 ```
 Author: John Westerman, Illumio, Inc.
-Serial number for this document is 20260329124356;
-Version 2026.03
-Sunday March 29, 2026 12:43
+Serial number for this document is 20260617052642;
+Version 2026.06
+Wednesday June 17, 2026 05:26
 
 Changed:
 1. Updated PCE backup wording; Added how to back up the traffic database.
@@ -342,7 +342,7 @@ where NNNNNNNN is the build version downloaded from the web site and YYY is the 
 For example:
 
 ```
-sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-19.3.0-6104.tar.bz2 --compatibility-matrix /tmp/illumio-release-compatibility-8.tar.bz2 --orgs all --default --no-prompt
+sudo -u ilo-pce illumio-pce-ctl ven-software-install /tmp/illumio-ven-bundle-25.2.40-4047.tar.bz2 --compatibility-matrix /tmp/illumio-release-compatibility-8.tar.bz2 --orgs all --default --no-prompt
 ```
 
 **NOTE:** Keep this in mind; Make sure you use fully qualified names for the file for this process. For example, if you are in the /tmp directory don't expect illumio-pce-ctl to find this in the local working directory (it is not looking for it there). For whatever reason the tool will not look in to your current working directory for this file so be sure and specify the path. In the case above, I have supplied the full file path and file name. ilo-pce will also need at least read capability for these files since the command is done using ilo-pce permissions.
